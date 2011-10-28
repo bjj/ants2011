@@ -258,8 +258,10 @@ istream& operator>>(istream &is, State &state)
                     state.timer.start();
                 break;
             }
-            else //unknown line
+            else {//unknown line
+                state.bug << "unknown " << inputType << endl;
                 getline(is, junk);
+            }
         }
     }
 

@@ -7,6 +7,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <map>
 #include <queue>
 #include <stack>
 #include <stdint.h>
@@ -42,6 +43,7 @@ struct State
 
     std::vector<std::vector<Square> > grid;
     std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
+    typedef std::vector<Location>::iterator iterator;
 
     Timer timer;
     Bug bug;

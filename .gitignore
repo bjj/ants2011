@@ -1,0 +1,4 @@
+*.o
+MyBot
+*.core
+debug.txt

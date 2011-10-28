@@ -2,6 +2,7 @@
 #define BOT_H_
 
 #include "State.h"
+#include "edt.h"
 
 /*
     This struct represents your bot in the game of Ants
@@ -9,6 +10,9 @@
 struct Bot
 {
     State state;
+    Edt edt;
+    Grid<bool> busy;
+    std::vector<Location> interesting;
 
     Bot();
 

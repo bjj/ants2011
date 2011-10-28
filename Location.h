@@ -18,6 +18,16 @@ struct Location
         row = r;
         col = c;
     };
+
+    bool operator < (const Location &other) const
+    {
+        return (row == other.row ? (col < other.col) : (row < other.row));
+    }
+
+    bool operator == (const Location &other) const
+    {
+        return row == other.row && col == other.col;
+    }
 };
 
 #endif //LOCATION_H_
