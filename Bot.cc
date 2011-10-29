@@ -74,7 +74,7 @@ Move Bot::pickMove(const Location &loc) const
     priority_queue<Move> pick;
     pick.push(Move(loc, e_food.gradient(loc), e_food(loc)));
     pick.push(Move(loc, e_explore.gradient(loc), e_explore(loc)));
-    pick.push(Move(loc, e_attack.gradient(loc), e_attack(loc) / 4));
+    pick.push(Move(loc, e_attack.gradient(loc), e_attack(loc) / 3));
     return pick.top();
 }
 
@@ -103,42 +103,46 @@ void Bot::makeMoves()
     priority_queue<Move> moves;
 
     set<Location> defense;
-    if (state.myAnts.size() > 15) {
-        for (State::iterator it = state.myHills.begin(); it != state.myHills.end(); ++it) {
-            const Square &hill = state.grid[(*it).row][(*it).col];
-            if (!hill.isVisible)
-                continue;
+    int defenders = state.myAnts.size() - 15;
+    for (State::iterator it = state.myHills.begin(); defenders > 0 && it != state.myHills.end(); ++it) {
+        const Square &hill = state.grid[(*it).row][(*it).col];
+        if (!hill.isVisible)
+            continue;
 
-            int empty_dir = -1;
-            for (int d = 0; d < TDIRECTIONS; ++d) {
-                const Location loc = state.getLocation(*it, d);
-                const Square &square = state.grid[loc.row][loc.col];
-                if (!square.isWater && square.ant != 0) {
-                    empty_dir = d;
+        int empty_dir = -1;
+        for (int d = 0; d < TDIRECTIONS; ++d) {
+            const Location loc = state.getLocation(*it, d);
+            const Square &square = state.grid[loc.row][loc.col];
+            if (!square.isWater && square.ant != 0) {
+                empty_dir = d;
+                // try to defend in opposing pairs
+                const Location behind = state.getLocation(*it, BEHIND[d]);
+                if (state.grid[behind.row][behind.col].ant == 0)
                     break;
-                }
             }
-
-            bool need_escape = hill.ant == 0;
-
-            state.bug << "escape plan: " << need_escape << " towards " << empty_dir;
-            for (int d = 0; d < TDIRECTIONS; ++d) {
-                const Location loc = state.getLocation(*it, d);
-                const Square &square = state.grid[loc.row][loc.col];
-                if (need_escape) {
-                    if (empty_dir != -1 ? (d == empty_dir) : (square.ant == 0 && pickMove(loc).dir != -1)) {
-            state.bug << " went " << d;
-                        // handle hill here:
-                        defense.insert(*it);
-                        moves.push(Move(*it, d, 999));
-                        need_escape = false;
-                        continue;
-                    }
-                }
-                defense.insert(loc);
-            }
-            state.bug << endl;
         }
+
+        bool need_escape = hill.ant == 0;
+
+        state.bug << "escape plan: " << need_escape << " towards " << empty_dir;
+        for (int d = 0; defenders > 0 && d < TDIRECTIONS; ++d) {
+            const Location loc = state.getLocation(*it, d);
+            const Square &square = state.grid[loc.row][loc.col];
+            if (need_escape) {
+                if (empty_dir != -1 ? (d == empty_dir) : (square.ant == 0 && pickMove(loc).dir != -1)) {
+        state.bug << " went " << d;
+                    // handle hill here:
+                    defense.insert(*it);
+                    moves.push(Move(*it, d, 999));
+                    need_escape = false;
+                    defenders--;
+                    continue;
+                }
+            }
+            defense.insert(loc);
+            defenders--;
+        }
+        state.bug << endl;
     }
 
     for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
