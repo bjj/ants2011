@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <queue>
+#include <set>
 #include <stack>
 #include <stdint.h>
 
@@ -43,6 +44,7 @@ struct State
 
     std::vector<std::vector<Square> > grid;
     std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
+    std::set<Location> allEnemyHills;
     typedef std::vector<Location>::iterator iterator;
 
     Timer timer;
@@ -59,8 +61,8 @@ struct State
 
     void makeMove(const Location &loc, int direction);
 
-    double distance(const Location &loc1, const Location &loc2);
-    Location getLocation(const Location &startLoc, int direction);
+    double distance(const Location &loc1, const Location &loc2) const;
+    Location getLocation(const Location &startLoc, int direction) const;
 
     void updateVisionInformation();
 };

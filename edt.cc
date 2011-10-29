@@ -3,8 +3,7 @@
 #include <stdio.h>
 
 Edt::Edt(State &_state)
-    : state(_state)
-    , dist(_state)
+    : Grid<int>(_state)
 {
     ;
 }
@@ -21,10 +20,15 @@ Edt::enqueue(std::queue<Location> & q, int r, int c)
 void
 Edt::update(std::queue<Location> &food)
 {
-    dist.reset();
+    reset();
+
+    empty = food.empty();
+    if (empty)
+        return;
+
     for (int r = 0; r < state.rows; ++r) {
         for (int c = 0; c < state.cols; ++c) {
-            if (state.grid[r][c].isWater)
+            if (state.grid[r][c].isWater || state.grid[r][c].hillPlayer == 0)
                 (*this)(r, c) = 9999;
         }
     }
@@ -65,3 +69,4 @@ Edt::update(std::queue<Location> &food)
     }
 #endif
 }
+

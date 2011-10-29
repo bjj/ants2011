@@ -47,7 +47,7 @@ void State::makeMove(const Location &loc, int direction)
 };
 
 //returns the euclidean distance between two locations with the edges wrapped
-double State::distance(const Location &loc1, const Location &loc2)
+double State::distance(const Location &loc1, const Location &loc2) const
 {
     int d1 = abs(loc1.row-loc2.row),
         d2 = abs(loc1.col-loc2.col),
@@ -57,7 +57,7 @@ double State::distance(const Location &loc1, const Location &loc2)
 };
 
 //returns the new location from moving in a given direction with the edges wrapped
-Location State::getLocation(const Location &loc, int direction)
+Location State::getLocation(const Location &loc, int direction) const
 {
     return Location( (loc.row + DIRECTIONS[direction][0] + rows) % rows,
                      (loc.col + DIRECTIONS[direction][1] + cols) % cols );
@@ -83,7 +83,7 @@ void State::updateVisionInformation()
         locQueue.push(sLoc);
 
         std::vector<std::vector<bool> > visited(rows, std::vector<bool>(cols, 0));
-        grid[sLoc.row][sLoc.col].isVisible = 1;
+        grid[sLoc.row][sLoc.col].setVisible();
         visited[sLoc.row][sLoc.col] = 1;
 
         while(!locQueue.empty())
@@ -97,13 +97,22 @@ void State::updateVisionInformation()
 
                 if(!visited[nLoc.row][nLoc.col] && distance(sLoc, nLoc) <= viewradius)
                 {
-                    grid[nLoc.row][nLoc.col].isVisible = 1;
+                    grid[nLoc.row][nLoc.col].setVisible();
                     locQueue.push(nLoc);
                 }
                 visited[nLoc.row][nLoc.col] = 1;
             }
         }
     }
+    vector<Location> hills;
+    for (set<Location>::iterator it = allEnemyHills.begin(); it != allEnemyHills.end(); ++it) {
+        const Square &square = grid[(*it).row][(*it).col];
+        if (square.isVisible && !square.isHill)
+            continue;
+        hills.push_back(*it);
+    }
+    allEnemyHills.clear();
+    copy(hills.begin(), hills.end(), inserter(allEnemyHills, allEnemyHills.begin()));
 };
 
 /*
@@ -118,7 +127,9 @@ ostream& operator<<(ostream &os, const State &state)
     {
         for(int col=0; col<state.cols; col++)
         {
-            if(state.grid[row][col].isWater)
+            if(state.grid[row][col].frontier)
+                os << '@';
+            else if(state.grid[row][col].isWater)
                 os << '%';
             else if(state.grid[row][col].isFood)
                 os << '*';
@@ -128,6 +139,8 @@ ostream& operator<<(ostream &os, const State &state)
                 os << (char)('a' + state.grid[row][col].ant);
             else if(state.grid[row][col].isVisible)
                 os << '.';
+            else if(state.grid[row][col].wasVisible)
+                os << ',';
             else
                 os << '?';
         }
@@ -238,8 +251,10 @@ istream& operator>>(istream &is, State &state)
                 state.grid[row][col].hillPlayer = player;
                 if(player == 0)
                     state.myHills.push_back(Location(row, col));
-                else
+                else {
                     state.enemyHills.push_back(Location(row, col));
+                    state.allEnemyHills.insert(Location(row, col));
+                }
 
             }
             else if(inputType == "players") //player information
