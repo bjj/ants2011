@@ -1,6 +1,7 @@
 #ifndef EDT_H_
 #define EDT_H_
 
+#include <string.h>
 #include <queue>
 #include <algorithm>
 

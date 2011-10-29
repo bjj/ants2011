@@ -121,10 +121,13 @@ void Bot::makeMoves()
 
             bool need_escape = hill.ant == 0;
 
+            state.bug << "escape plan: " << need_escape << " towards " << empty_dir;
             for (int d = 0; d < TDIRECTIONS; ++d) {
                 const Location loc = state.getLocation(*it, d);
+                const Square &square = state.grid[loc.row][loc.col];
                 if (need_escape) {
-                    if (empty_dir != -1 ? (d == empty_dir) : (pickMove(loc).dir != -1)) {
+                    if (empty_dir != -1 ? (d == empty_dir) : (square.ant == 0 && pickMove(loc).dir != -1)) {
+            state.bug << " went " << d;
                         // handle hill here:
                         defense.insert(*it);
                         moves.push(Move(*it, d, 999));
@@ -134,6 +137,7 @@ void Bot::makeMoves()
                 }
                 defense.insert(loc);
             }
+            state.bug << endl;
         }
     }
 
