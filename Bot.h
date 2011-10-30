@@ -28,7 +28,7 @@ struct Move
 struct Bot
 {
     State state;
-    Edt e_food, e_explore, e_attack, e_defend;
+    Edt e_food, e_explore, e_attack, e_defend, e_enemies;
     Grid<bool> busy;
     std::vector<Location> interesting;
 

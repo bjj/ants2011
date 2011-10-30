@@ -13,7 +13,7 @@ all: $(OBJECTS) $(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
-.cc.o: *.h
+.cc.o: *.h Makefile
 	$(CC) $(CFLAGS) $< -o $@
 
 clean: 

@@ -12,6 +12,7 @@ Bot::Bot()
     , e_explore(state)
     , e_attack(state)
     , e_defend(state)
+    , e_enemies(state)
     , busy(state)
 {
     srandom(time(0));
@@ -87,6 +88,12 @@ void Bot::makeMoves()
     e_explore.update(frontier);
 
     state.bug << state << endl;
+    //state.bug << e_explore << endl;
+
+    queue<Location> enemies;
+    for (State::iterator it = state.enemyAnts.begin(); it != state.enemyAnts.end(); ++it)
+        enemies.push(*it);
+    e_enemies.update(enemies);
 
     queue<Location> food;
     for (State::iterator it = state.food.begin(); it != state.food.end(); ++it)
@@ -94,9 +101,12 @@ void Bot::makeMoves()
     e_food.update(food);
 
     queue<Location> victims;
-    if (state.myAnts.size() > 15) {
-        for (set<Location>::iterator it = state.allEnemyHills.begin(); it != state.allEnemyHills.end(); ++it)
-            victims.push(*it);
+    if (state.myAnts.size() > 5) {
+        int meekness = 25 - state.myAnts.size();
+        for (set<Location>::iterator it = state.allEnemyHills.begin(); it != state.allEnemyHills.end(); ++it) {
+            if (e_enemies.empty() || e_enemies(*it) > meekness)
+                victims.push(*it);
+        }
     }
     e_attack.update(victims);
 
@@ -125,7 +135,7 @@ void Bot::makeMoves()
         bool need_escape = hill.ant == 0;
 
         state.bug << "escape plan: " << need_escape << " towards " << empty_dir;
-        for (int d = 0; defenders > 0 && d < TDIRECTIONS; ++d) {
+        for (int d = 0; d < TDIRECTIONS; ++d) {
             const Location loc = state.getLocation(*it, d);
             const Square &square = state.grid[loc.row][loc.col];
             if (need_escape) {
@@ -153,7 +163,7 @@ void Bot::makeMoves()
 
         const Move m = pickMove(loc);
 
-        state.bug << "ant " << ant << ": " << m.dir << " (" << m.close << ")" << endl;
+        state.bug << "ant " << ant << " (" << loc.row << "," << loc.col << "): " << m.dir << " (" << m.close << ")" << endl;
 
         if (m.dir >= 0)
             moves.push(m);
@@ -171,6 +181,11 @@ void Bot::makeMoves()
             state.makeMove(move.loc, move.dir);
             busy(move.loc) = false;
             busy(new_loc) = true;
+        } else if (defense.count(new_loc) && move.close > 0) {
+            state.bug << "sub move!  ";
+            moves.pop();
+            moves.push(Move(new_loc, move.dir, -1));
+            continue;
         }
         moves.pop();
     }

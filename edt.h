@@ -4,6 +4,7 @@
 #include <string.h>
 #include <queue>
 #include <algorithm>
+#include <iostream>
 
 #include "State.h"
 
@@ -42,6 +43,10 @@ protected:
     T *data;
 };
 
+class Edt;
+
+std::ostream& operator<<(std::ostream &os, const Edt &edt);
+
 class Edt : public Grid<int>
 {
 public:
@@ -49,7 +54,7 @@ public:
     void update(std::queue<Location> &food);
     int gradient(const Location &loc) const
     {
-        if (empty)
+        if (empty_)
             return -1;
         int best_dist = (*this)(loc);
         int best = -1;
@@ -62,11 +67,14 @@ public:
         }
         return best;
     }
+    bool empty() const { return empty_; }
 
 protected:
+    friend std::ostream& operator<<(std::ostream &os, const Edt &edt);
+
     void enqueue(std::queue<Location> & q, int r, int c);
 
-    bool empty;
+    bool empty_;
 };
 
 #endif /* EDT_H_ */

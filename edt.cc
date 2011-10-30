@@ -1,5 +1,8 @@
 #include "edt.h"
 
+#include <iostream>
+#include <iomanip>
+
 #include <stdio.h>
 
 Edt::Edt(State &_state)
@@ -22,8 +25,8 @@ Edt::update(std::queue<Location> &food)
 {
     reset();
 
-    empty = food.empty();
-    if (empty)
+    empty_ = food.empty();
+    if (empty_)
         return;
 
     for (int r = 0; r < state.rows; ++r) {
@@ -70,3 +73,21 @@ Edt::update(std::queue<Location> &food)
 #endif
 }
 
+
+std::ostream& operator<<(std::ostream &os, const Edt &edt)
+{
+    os << std::hex;
+    for (int r = 0; r < edt.state.rows; ++r) {
+        for (int c = 0; c < edt.state.cols; ++c) {
+            if (edt(r,c) >= 1000)
+                os << " __";
+            else if (edt(r,c) > 0xff)
+                os << " xx";
+            else
+                os << std::setw(3) << edt(r,c);
+        }
+        os << std::endl;
+    }
+    os << std::dec;
+    return os;
+}
