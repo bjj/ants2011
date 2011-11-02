@@ -4,22 +4,42 @@
 #include "State.h"
 #include "edt.h"
 
+#include <queue>
+#include <vector>
+
 struct Move
 {
-    Move(const Location &l, int d, int c)
-        : loc(l), dir(d), close(c) { }
+    Move(const Location &l, int d, int s, int c)
+        : loc(l), dir(d), score(s), close(c) { }
 
 
-    bool operator < (const Move &rhs) const
+    struct BestScore
     {
-        if ((rhs.dir == -1) == (dir == -1))
-            return close > rhs.close;
-        else
-            return dir == -1;
-    }
+        bool operator () (const Move &lhs, const Move &rhs) const
+        {
+            if ((rhs.dir == -1) == (lhs.dir == -1))
+                return lhs.score > rhs.score;
+            else
+                return lhs.dir == -1;
+        }
+    };
+
+    struct Closest
+    {
+        bool operator () (const Move &lhs, const Move &rhs) const
+        {
+            if ((rhs.dir == -1) == (lhs.dir == -1))
+                return lhs.close > rhs.close;
+            else
+                return lhs.dir == -1;
+        }
+    };
+
+    typedef std::priority_queue<Move, std::vector<Move>, BestScore> score_queue;
+    typedef std::priority_queue<Move, std::vector<Move>, BestScore> close_queue;
 
     Location loc;
-    int dir, close;
+    int dir, score, close;
 };
 
 /*

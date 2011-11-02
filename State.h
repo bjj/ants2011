@@ -24,7 +24,10 @@
 const int TDIRECTIONS = 4;
 const char CDIRECTIONS[4] = {'N', 'E', 'S', 'W'};
 const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1} };      //{N, E, S, W}
+const int AHEAD[4] = { 0, 1, 2, 3 };
 const int BEHIND[4] = { 2, 3, 0, 1 };
+const int RIGHT[4] = { 1, 2, 3, 0 };
+const int LEFT[4] = { 3, 0, 1, 2 };
 
 /*
     struct to store current state information
@@ -63,7 +66,27 @@ struct State
     void makeMove(const Location &loc, int direction);
 
     double distance(const Location &loc1, const Location &loc2) const;
-    Location getLocation(const Location &startLoc, int direction) const;
+
+    //returns the new location from moving in a given direction with the edges wrapped
+    Location getLocation(const Location &loc, int direction) const
+    {
+        return Location( (loc.row + DIRECTIONS[direction][0] + rows) % rows,
+                         (loc.col + DIRECTIONS[direction][1] + cols) % cols );
+    }
+
+    //returns the new location from moving in a given direction with the edges wrapped
+    Location normLocation(const Location &loc) const
+    {
+        return Location( (loc.row + rows) % rows,
+                         (loc.col + cols) % cols );
+    }
+
+    //returns the new location from moving in a given direction with the edges wrapped
+    Location deltaLocation(const Location &loc, int dr, int dc) const
+    {
+        return Location( (loc.row + dr + rows) % rows,
+                         (loc.col + dc + cols) % cols );
+    }
 
     void updateVisionInformation();
 };

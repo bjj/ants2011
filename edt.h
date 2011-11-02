@@ -52,7 +52,7 @@ class Edt : public Grid<int>
 public:
     Edt(State &_state);
     void update(std::queue<Location> &food);
-    int gradient(const Location &loc) const
+    int gradient(const Location &loc, int *close = 0) const
     {
         if (empty_)
             return -1;
@@ -65,6 +65,8 @@ public:
                 best = d;
             }
         }
+        if (close)
+            *close = best_dist;
         return best;
     }
     bool empty() const { return empty_; }

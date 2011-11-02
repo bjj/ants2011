@@ -70,12 +70,27 @@ queue<Location> Bot::visited_frontier()
     return frontier;
 }
 
+static inline int costInflect(int c, int breakpoint, int mul, int div)
+{
+    return c <= breakpoint ? c : (c * mul / div);
+}
+
+static inline Move
+makeMove(const Location &loc, const Edt &edt, int breakpoint = 99999, int mul = 1, int div = 1)
+{
+    int close = 9999;
+    int dir = edt.gradient(loc, &close);
+    int score = close <= breakpoint ? close : (close * mul / div);
+    return Move(loc, dir, score, close);
+}
+
 Move Bot::pickMove(const Location &loc) const
 {
-    priority_queue<Move> pick;
-    pick.push(Move(loc, e_food.gradient(loc), e_food(loc)));
-    pick.push(Move(loc, e_explore.gradient(loc), e_explore(loc)));
-    pick.push(Move(loc, e_attack.gradient(loc), e_attack(loc) / 3));
+    Move::score_queue pick;
+    pick.push(makeMove(loc, e_food, 10, 3, 2));
+    pick.push(makeMove(loc, e_explore));
+    pick.push(makeMove(loc, e_attack, 5, 1, 3));
+    pick.push(makeMove(loc, e_defend, 4, 2, 1));
     return pick.top();
 }
 
@@ -102,7 +117,7 @@ void Bot::makeMoves()
 
     queue<Location> victims;
     if (state.myAnts.size() > 5) {
-        int meekness = 25 - state.myAnts.size();
+        int meekness = 20 - state.myAnts.size();
         for (set<Location>::iterator it = state.allEnemyHills.begin(); it != state.allEnemyHills.end(); ++it) {
             if (e_enemies.empty() || e_enemies(*it) > meekness)
                 victims.push(*it);
@@ -110,60 +125,36 @@ void Bot::makeMoves()
     }
     e_attack.update(victims);
 
-    priority_queue<Move> moves;
+    Move::close_queue moves;
 
-    set<Location> defense;
-    int defenders = state.myAnts.size() - 15;
+    set<Location> sessile;
+    queue<Location> defense;
+    int defenders = state.myAnts.size() - 4;
     for (State::iterator it = state.myHills.begin(); defenders > 0 && it != state.myHills.end(); ++it) {
-        const Square &hill = state.grid[(*it).row][(*it).col];
-        if (!hill.isVisible)
-            continue;
+        static const int formation[4][2] = { {-1,-1}, {-1,1}, {1,-1}, {1,1} };
 
-        int empty_dir = -1;
-        for (int d = 0; d < TDIRECTIONS; ++d) {
-            const Location loc = state.getLocation(*it, d);
+        for (int i = 0; defenders > 0 && i < 4; ++i) {
+            const Location loc = state.deltaLocation(*it, formation[i][0], formation[i][1]);
             const Square &square = state.grid[loc.row][loc.col];
-            if (!square.isWater && square.ant != 0) {
-                empty_dir = d;
-                // try to defend in opposing pairs
-                const Location behind = state.getLocation(*it, BEHIND[d]);
-                if (state.grid[behind.row][behind.col].ant == 0)
-                    break;
-            }
-        }
 
-        bool need_escape = hill.ant == 0;
-
-        state.bug << "escape plan: " << need_escape << " towards " << empty_dir;
-        for (int d = 0; d < TDIRECTIONS; ++d) {
-            const Location loc = state.getLocation(*it, d);
-            const Square &square = state.grid[loc.row][loc.col];
-            if (need_escape) {
-                if (empty_dir != -1 ? (d == empty_dir) : (square.ant == 0 && pickMove(loc).dir != -1)) {
-        state.bug << " went " << d;
-                    // handle hill here:
-                    defense.insert(*it);
-                    moves.push(Move(*it, d, 999));
-                    need_escape = false;
-                    defenders--;
-                    continue;
-                }
-            }
-            defense.insert(loc);
+            if (square.ant == 0)
+                sessile.insert(loc);
+            else if (!square.isWater)
+                defense.push(loc);
             defenders--;
         }
-        state.bug << endl;
     }
+    e_defend.update(defense);
 
     for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
         const Location & loc = state.myAnts[ant];
 
-        if (defense.count(loc))
+        if (sessile.count(loc))
             continue;
 
         const Move m = pickMove(loc);
 
-        state.bug << "ant " << ant << " (" << loc.row << "," << loc.col << "): " << m.dir << " (" << m.close << ")" << endl;
+        state.bug << "ant " << ant << " (" << loc.row << "," << loc.col << "): " << CDIRECTIONS[m.dir] << " (" << m.close << ")" << endl;
 
         if (m.dir >= 0)
             moves.push(m);
@@ -173,21 +164,31 @@ void Bot::makeMoves()
     for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
         busy(state.myAnts[ant]) = true;
     }
+    int max_sub = 100;
+    Move::close_queue retry;
+    bool moved = false;
+    int angle = 0;
+    int avoid = moves.size() < 5 ? (state.attackradius + 2) : 0;
+    static const int *rotate[] = { AHEAD, RIGHT, LEFT };
     while (!moves.empty()) {
         const Move &move = moves.top();
-        Location new_loc = state.getLocation(move.loc, move.dir);
-        if (!busy(new_loc)) {
-            state.bug << "new move " << CDIRECTIONS[move.dir] << endl;
-            state.makeMove(move.loc, move.dir);
+        int dir = rotate[angle][move.dir];
+        Location new_loc = state.getLocation(move.loc, dir);
+        if (!busy(new_loc) && e_food(new_loc) != 9999 && e_enemies(new_loc) > avoid) {
+            state.bug << "move (" << move.loc.row << "," << move.loc.col << "): " << CDIRECTIONS[dir] << endl;
+            state.makeMove(move.loc, dir);
             busy(move.loc) = false;
             busy(new_loc) = true;
-        } else if (defense.count(new_loc) && move.close > 0) {
-            state.bug << "sub move!  ";
-            moves.pop();
-            moves.push(Move(new_loc, move.dir, -1));
-            continue;
+            moved = true;
+        } else {
+            retry.push(move);
         }
         moves.pop();
+        if (moves.empty()) {
+            if (moved || ++angle < 3)
+                swap(retry, moves);
+            moved = false;
+        }
     }
 
     state.bug << "time taken: " << state.timer.getTime() << "ms" << endl << endl;

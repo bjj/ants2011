@@ -26,14 +26,20 @@ Edt::update(std::queue<Location> &food)
     reset();
 
     empty_ = food.empty();
-    if (empty_)
-        return;
 
     for (int r = 0; r < state.rows; ++r) {
         for (int c = 0; c < state.cols; ++c) {
             if (state.grid[r][c].isWater || state.grid[r][c].hillPlayer == 0)
                 (*this)(r, c) = 9999;
         }
+    }
+
+    if (empty_) {
+        for (int r = 0; r < state.rows; ++r)
+            for (int c = 0; c < state.cols; ++c)
+                if ((*this)(r, c) == 0)
+                    (*this)(r, c) = 9998;
+        return;
     }
 
     const Location marker(-1, -1);

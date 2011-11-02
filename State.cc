@@ -1,5 +1,7 @@
 #include "State.h"
 
+#include <sstream>
+
 using namespace std;
 
 //constructor
@@ -7,7 +9,9 @@ State::State()
 {
     gameover = 0;
     turn = 0;
-    bug.open("./debug.txt");
+    stringstream ss;
+    ss << "debug." << getpid() << ".txt";
+    bug.open(ss.str());
 };
 
 //deconstructor
@@ -54,13 +58,6 @@ double State::distance(const Location &loc1, const Location &loc2) const
         dr = min(d1, rows-d1),
         dc = min(d2, cols-d2);
     return sqrt(dr*dr + dc*dc);
-};
-
-//returns the new location from moving in a given direction with the edges wrapped
-Location State::getLocation(const Location &loc, int direction) const
-{
-    return Location( (loc.row + DIRECTIONS[direction][0] + rows) % rows,
-                     (loc.col + DIRECTIONS[direction][1] + cols) % cols );
 };
 
 /*
