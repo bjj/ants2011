@@ -34,14 +34,6 @@ Edt::update(std::queue<Location> &food)
         }
     }
 
-    if (empty_) {
-        for (int r = 0; r < state.rows; ++r)
-            for (int c = 0; c < state.cols; ++c)
-                if ((*this)(r, c) == 0)
-                    (*this)(r, c) = 9998;
-        return;
-    }
-
     const Location marker(-1, -1);
     food.push(marker);
     int d = 1;
@@ -65,18 +57,35 @@ Edt::update(std::queue<Location> &food)
         }
     }
 
-#if 0
-    for (int r = 0; r < state.rows; ++r) {
-        for (int c = 0; c < state.cols; ++c) {
-            int & val = (*this)(r, c);
-            if (val == 9999)
-                fprintf(stderr, "** ");
-            else
-                fprintf(stderr, "%2d ", val);
-        }
-        fputc('\n', stderr);
-    }
-#endif
+    // Anything unreachable
+    for (int r = 0; r < state.rows; ++r)
+        for (int c = 0; c < state.cols; ++c)
+            if ((*this)(r, c) == 0)
+                (*this)(r, c) = 9998;
+}
+
+/**
+ * Our grid contains the Manhattan distance to any target.  To convert to
+ * Euclidean distance we walk back to the source and then do the math.
+ */
+double
+Edt::euclidean(const Location &loc, int limit) const
+{
+    Location walk = loc;
+    int close = 0, dir = 0;
+
+    do {
+        dir = gradient(walk, &close);
+        if (dir != -1)
+            walk = state.getLocation(walk, dir);
+        if (close > limit)
+            return 9999;
+    } while (dir != -1 && close != 1);
+
+    if (close == 1)
+        return state.distance(loc, walk);
+    else
+        return 9999;
 }
 
 
@@ -97,3 +106,4 @@ std::ostream& operator<<(std::ostream &os, const Edt &edt)
     os << std::dec;
     return os;
 }
+

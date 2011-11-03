@@ -36,7 +36,7 @@ struct Move
     };
 
     typedef std::priority_queue<Move, std::vector<Move>, BestScore> score_queue;
-    typedef std::priority_queue<Move, std::vector<Move>, BestScore> close_queue;
+    typedef std::priority_queue<Move, std::vector<Move>, Closest> close_queue;
 
     Location loc;
     int dir, score, close;
@@ -48,8 +48,9 @@ struct Move
 struct Bot
 {
     State state;
-    Edt e_food, e_explore, e_attack, e_defend, e_enemies;
+    Edt e_food, e_explore, e_attack, e_defend, e_enemies, e_self;
     Grid<bool> busy;
+    Grid<bool> combatOccupied;
     std::vector<Location> interesting;
 
     Bot();
@@ -60,6 +61,8 @@ struct Bot
     void endTurn();     //indicates to the engine that it has made its moves
     std::queue<Location> visited_frontier();
     Move pickMove(const Location &loc) const;
+
+    void combat(Move::close_queue &moves, std::set<Location> &sessile);
 
 };
 

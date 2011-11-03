@@ -1,14 +1,17 @@
 CC=g++
-CFLAGS=-O3 -funroll-loops -c -Wall
+CFLAGS=-c -Wall
 LDFLAGS=-O2 -lm
-SOURCES=Bot.cc MyBot.cc State.cc edt.cc
+SOURCES=Bot.cc MyBot.cc State.cc edt.cc Location.cc combat.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=MyBot
 
 #Uncomment the following to enable debugging
 CFLAGS += -g
-#CFLAGS += -DDEBUG
+#CFLAGS += -pg
+#LDFLAGS += -pg
+CFLAGS += -DDEBUG
 
+CFLAGS+=-O3 -funroll-loops
 all: $(OBJECTS) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)

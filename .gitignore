@@ -2,3 +2,5 @@
 MyBot
 *.core
 debug.txt
+debug.*.txt
+*.gmon

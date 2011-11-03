@@ -22,12 +22,12 @@
     constants
 */
 const int TDIRECTIONS = 4;
-const char CDIRECTIONS[4] = {'N', 'E', 'S', 'W'};
-const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1} };      //{N, E, S, W}
-const int AHEAD[4] = { 0, 1, 2, 3 };
-const int BEHIND[4] = { 2, 3, 0, 1 };
-const int RIGHT[4] = { 1, 2, 3, 0 };
-const int LEFT[4] = { 3, 0, 1, 2 };
+const char CDIRECTIONS[5] = {'N', 'E', 'S', 'W', 'x'};
+const int DIRECTIONS[5][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1}, {0, 0} };      //{N, E, S, W}
+const int AHEAD[5] = { 0, 1, 2, 3, 4 };
+const int BEHIND[5] = { 2, 3, 0, 1, 4 };
+const int RIGHT[5] = { 1, 2, 3, 0, 4 };
+const int LEFT[5] = { 3, 0, 1, 2, 4 };
 
 /*
     struct to store current state information
@@ -52,7 +52,7 @@ struct State
     typedef std::vector<Location>::iterator iterator;
 
     Timer timer;
-    Bug bug;
+    mutable Bug bug;
 
     /*
         Functions

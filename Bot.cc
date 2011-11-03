@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 
 #include "Bot.h"
 
@@ -13,9 +14,12 @@ Bot::Bot()
     , e_attack(state)
     , e_defend(state)
     , e_enemies(state)
+    , e_self(state)
     , busy(state)
+    , combatOccupied(state)
 {
     srandom(time(0));
+    srand48(time(0));
 }
 
 //plays a single game of Ants.
@@ -89,7 +93,7 @@ Move Bot::pickMove(const Location &loc) const
     Move::score_queue pick;
     pick.push(makeMove(loc, e_food, 10, 3, 2));
     pick.push(makeMove(loc, e_explore));
-    pick.push(makeMove(loc, e_attack, 5, 1, 3));
+    pick.push(makeMove(loc, e_attack, 5, 2, 3));
     pick.push(makeMove(loc, e_defend, 4, 2, 1));
     return pick.top();
 }
@@ -110,6 +114,11 @@ void Bot::makeMoves()
         enemies.push(*it);
     e_enemies.update(enemies);
 
+    queue<Location> myants;
+    for (State::iterator it = state.myAnts.begin(); it != state.myAnts.end(); ++it)
+        myants.push(*it);
+    e_self.update(myants);
+
     queue<Location> food;
     for (State::iterator it = state.food.begin(); it != state.food.end(); ++it)
         food.push(*it);
@@ -125,9 +134,17 @@ void Bot::makeMoves()
     }
     e_attack.update(victims);
 
+
+    busy.reset();
+    for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
+        busy(state.myAnts[ant]) = true;
+    }
     Move::close_queue moves;
 
     set<Location> sessile;
+
+    combat(moves, sessile);
+
     queue<Location> defense;
     int defenders = state.myAnts.size() - 4;
     for (State::iterator it = state.myHills.begin(); defenders > 0 && it != state.myHills.end(); ++it) {
@@ -154,17 +171,12 @@ void Bot::makeMoves()
 
         const Move m = pickMove(loc);
 
-        state.bug << "ant " << ant << " (" << loc.row << "," << loc.col << "): " << CDIRECTIONS[m.dir] << " (" << m.close << ")" << endl;
+        state.bug << "ant " << ant << " " << loc << ": " << CDIRECTIONS[m.dir] << " (" << m.close << ")" << endl;
 
         if (m.dir >= 0)
             moves.push(m);
     }
 
-    busy.reset();
-    for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
-        busy(state.myAnts[ant]) = true;
-    }
-    int max_sub = 100;
     Move::close_queue retry;
     bool moved = false;
     int angle = 0;
@@ -174,8 +186,9 @@ void Bot::makeMoves()
         const Move &move = moves.top();
         int dir = rotate[angle][move.dir];
         Location new_loc = state.getLocation(move.loc, dir);
-        if (!busy(new_loc) && e_food(new_loc) != 9999 && e_enemies(new_loc) > avoid) {
-            state.bug << "move (" << move.loc.row << "," << move.loc.col << "): " << CDIRECTIONS[dir] << endl;
+        //if (!busy(new_loc) && e_food(new_loc) != 9999 && e_enemies(new_loc) > avoid) {
+        if (!busy(new_loc) && e_food(new_loc) != 9999) {
+            state.bug << "move " << move.loc << ": " << CDIRECTIONS[dir] << endl;
             state.makeMove(move.loc, dir);
             busy(move.loc) = false;
             busy(new_loc) = true;
