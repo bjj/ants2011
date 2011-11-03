@@ -7,41 +7,8 @@
 #include <iostream>
 
 #include "State.h"
+#include "grid.h"
 
-
-template <typename T>
-class Grid
-{
-public:
-    Grid(State &_state) : state(_state), data(0) { }
-
-    void reset()
-    {
-        if (data == 0)
-            data = new T[state.rows * state.cols];
-        memset(data, 0, state.rows * state.cols * sizeof(T));
-    }
-    T & operator () (const Location &loc)
-    {
-        return data[loc.row * state.cols + loc.col];
-    }
-    T & operator () (int r, int c)
-    {
-        return data[r * state.cols + c];
-    }
-    const T & operator () (const Location &loc) const
-    {
-        return data[loc.row * state.cols + loc.col];
-    }
-    const T & operator () (int r, int c) const
-    {
-        return data[r * state.cols + c];
-    }
-
-protected:
-    const State &state;
-    T *data;
-};
 
 class Edt;
 
@@ -70,6 +37,7 @@ public:
         return best;
     }
     bool empty() const { return empty_; }
+    double euclidean(const Location &loc, int limit = 9999) const;
 
 protected:
     friend std::ostream& operator<<(std::ostream &os, const Edt &edt);
