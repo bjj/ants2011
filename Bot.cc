@@ -27,6 +27,10 @@ void Bot::playGame()
 {
     //reads the game parameters and sets up
     cin >> state;
+
+    if (state.rows == 0 || state.cols == 0)
+        exit(0);
+
     state.setup();
     endTurn();
 

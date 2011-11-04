@@ -7,6 +7,7 @@ using namespace std;
 //constructor
 State::State()
 {
+    rows = cols = 0;
     gameover = 0;
     turn = 0;
     stringstream ss;
