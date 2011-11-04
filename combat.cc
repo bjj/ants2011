@@ -13,9 +13,9 @@ public:
     struct Ant {
         Ant(const Location &l) : loc(l), dir(TDIRECTIONS) { }
         struct Move {
-            Move() : occupied(0), threatened(0) { }
+            Move() : occupied(0), bonus(0) { }
             bool *occupied;
-            int threatened;
+            int bonus;
             vector<bool> overlap;
         };
         Location loc;
@@ -116,7 +116,7 @@ private:
 
     int score(const Ant &ant) const
     {
-        return -(ant.moves[ant.dir].threatened > 0);
+        return ant.moves[ant.dir].bonus;
     }
 
     void apply(int n)
@@ -179,7 +179,7 @@ ostream & operator << (ostream &os, const Combat &combat)
 
     os << endl << " ants:" << endl;
     for (vector<Combat::Ant>::const_iterator it = combat.ants.begin(); it != combat.ants.end(); ++it) {
-        os << "  " << (*it).loc << " " << CDIRECTIONS[(*it).dir] << " t(" << (*it).moves[(*it).dir].threatened << ")" << endl;
+        os << "  " << (*it).loc << " " << CDIRECTIONS[(*it).dir] << " b(" << (*it).moves[(*it).dir].bonus << ")" << endl;
     }
     os << endl;
 
@@ -233,16 +233,22 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                 ant.moves[d].occupied = &combatOccupied(dest);
                 if (*ant.moves[d].occupied)
                     continue;
+                int threatened = 0;
                 int last_threat_id = -1;
                 for (uint j = 0; j < enemies.size(); ++j) {
                     bool overlaps = state.distance(enemies[j].loc, dest) <=
                                                    state.attackradius;
                     ant.moves[d].overlap.push_back(overlaps);
                     if (overlaps && enemies[j].id != last_threat_id) {
-                        ant.moves[d].threatened++;
+                        threatened++;
                         last_threat_id = enemies[j].id;
                     }
                 }
+                ant.moves[d].bonus = -(threatened > 1);
+                if (state.grid[dest.row][dest.col].hillPlayer > 0)
+                    ant.moves[d].bonus += 20;
+                if (e_food(dest) == 2)
+                    ant.moves[d].bonus += 2;
             }
         }
     }
