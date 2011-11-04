@@ -107,9 +107,9 @@ private:
     int score(const Enemy &enemy) const
     {
         if (enemy.weakness == 0)
-            return 1;
+            return 10;
         else if (enemy.weakness >= 2)
-            return 2;
+            return 20;
         else
             return 0;
     }
@@ -244,11 +244,11 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                         last_threat_id = enemies[j].id;
                     }
                 }
-                ant.moves[d].bonus = -(threatened > 1);
+                ant.moves[d].bonus = -(threatened > 1) * 10;
                 if (state.grid[dest.row][dest.col].hillPlayer > 0)
-                    ant.moves[d].bonus += 20;
+                    ant.moves[d].bonus += 200;
                 if (e_food(dest) == 2)
-                    ant.moves[d].bonus += 2;
+                    ant.moves[d].bonus += 20;
             }
         }
     }
