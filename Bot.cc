@@ -95,7 +95,7 @@ makeMove(const Location &loc, const Edt &edt, int breakpoint = 99999, int mul = 
 Move Bot::pickMove(const Location &loc) const
 {
     Move::score_queue pick;
-    pick.push(makeMove(loc, e_food, 10, 3, 2));
+    pick.push(makeMove(loc, e_food, 8, 5, 2));
     pick.push(makeMove(loc, e_explore));
     pick.push(makeMove(loc, e_attack, 5, 2, 3));
     pick.push(makeMove(loc, e_defend, 4, 2, 1));
