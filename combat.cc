@@ -13,8 +13,9 @@ public:
     struct Ant {
         Ant(const Location &l) : loc(l), dir(TDIRECTIONS) { }
         struct Move {
-            Move() : occupied(0) { }
+            Move() : occupied(0), threatened(0) { }
             bool *occupied;
+            int threatened;
             vector<bool> overlap;
         };
         Location loc;
@@ -23,8 +24,9 @@ public:
     };
 
     struct Enemy {
-        Enemy(const Location &l) : loc(l), weakness(0) { }
+        Enemy(const Location &l, int n) : loc(l), id(n), weakness(0) { }
         Location loc;
+        int id;
         int weakness;
     };
 
@@ -32,13 +34,15 @@ public:
         : state(s)
         , ants(a)
         , enemies(e)
-        , my_e(0)
+        , attack_score(0)
+        , defend_score(0)
     {
         for (uint i = 0; i < ants.size(); ++i) {
             apply(i);
+            defend_score += score(ants[i]);
         }
         for (uint i = 0; i < enemies.size(); ++i) {
-            my_e += score(i);
+            attack_score += score(enemies[i]);
         }
     }
 
@@ -46,7 +50,8 @@ public:
         : state(other.state)
         , ants(other.ants)
         , enemies(other.enemies)
-        , my_e(other.my_e)
+        , attack_score(other.attack_score)
+        , defend_score(other.defend_score)
         , undo_i(other.undo_i)
         , undo_dir(other.undo_dir)
     {
@@ -58,7 +63,7 @@ public:
 
     double e() const
     {
-        return -my_e;
+        return -(attack_score + defend_score * 0.25);
     }
 
     size_t iterations() const
@@ -88,7 +93,8 @@ public:
     {
         ants = rhs.ants;
         enemies = rhs.enemies;
-        my_e = rhs.my_e;
+        attack_score = rhs.attack_score;
+        defend_score = rhs.defend_score;
         undo_i = rhs.undo_i;
         undo_dir = rhs.undo_dir;
         return *this;
@@ -98,15 +104,19 @@ private:
 
     Combat() : state(*((State *)0)) { }
 
-    int score(int n)
+    int score(const Enemy &enemy) const
     {
-        Combat::Enemy &enemy = enemies[n];
         if (enemy.weakness == 0)
             return 1;
         else if (enemy.weakness >= 2)
             return 2;
         else
             return 0;
+    }
+
+    int score(const Ant &ant) const
+    {
+        return -(ant.moves[ant.dir].threatened > 0);
     }
 
     void apply(int n)
@@ -131,15 +141,17 @@ private:
             return false;
         *old.occupied = false;
         *move.occupied = true;
+        defend_score -= score(ant);
         ant.dir = dir;
+        defend_score += score(ant);
         for (uint i = 0; i < enemies.size(); ++i) {
             if (move.overlap[i] != old.overlap[i]) {
-                int oldscore = score(i);
+                int oldscore = score(enemies[i]);
                 if (old.overlap[i])
                     enemies[i].weakness -= 1;
                 else
                     enemies[i].weakness += 1;
-                my_e += score(i) - oldscore;
+                attack_score += score(enemies[i]) - oldscore;
             }
         }
         return true;
@@ -152,21 +164,22 @@ public:
     vector<Ant> ants;
     vector<Enemy> enemies;
 private:
-    int my_e;
+    int attack_score;
+    int defend_score;
     int undo_i;
     char undo_dir;
 };
 
 ostream & operator << (ostream &os, const Combat &combat)
 {
-    os << "combat:" << endl << " score: " << combat.e() << endl << " enemies:" << endl;
+    os << "combat:" << endl << " score: " << -combat.e() << endl << " enemies:" << endl;
     for (vector<Combat::Enemy>::const_iterator it = combat.enemies.begin(); it != combat.enemies.end(); ++it) {
         os << "  " << (*it).loc << " w(" << (*it).weakness << ")" << endl;
     }
 
     os << endl << " ants:" << endl;
     for (vector<Combat::Ant>::const_iterator it = combat.ants.begin(); it != combat.ants.end(); ++it) {
-        os << "  " << (*it).loc << " " << CDIRECTIONS[(*it).dir] << endl;
+        os << "  " << (*it).loc << " " << CDIRECTIONS[(*it).dir] << " t(" << (*it).moves[(*it).dir].threatened << ")" << endl;
     }
     os << endl;
 
@@ -198,10 +211,11 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     vector<Combat::Enemy> enemies;
     for (State::iterator it = state.enemyAnts.begin(); it != state.enemyAnts.end(); ++it) {
         if (e_self.euclidean(*it, limit) <= close) {
+            int id = it - state.enemyAnts.begin();
             for (int d = 0; d < TDIRECTIONS + 1; ++d) {
                 const Location dest = state.getLocation(*it, d);
                 if (!combatOccupied(dest))
-                    enemies.push_back(Combat::Enemy(dest));
+                    enemies.push_back(Combat::Enemy(dest, id));
             }
         }
     }
@@ -219,10 +233,15 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                 ant.moves[d].occupied = &combatOccupied(dest);
                 if (*ant.moves[d].occupied)
                     continue;
+                int last_threat_id = -1;
                 for (uint j = 0; j < enemies.size(); ++j) {
                     bool overlaps = state.distance(enemies[j].loc, dest) <=
                                                    state.attackradius;
                     ant.moves[d].overlap.push_back(overlaps);
+                    if (overlaps && enemies[j].id != last_threat_id) {
+                        ant.moves[d].threatened++;
+                        last_threat_id = enemies[j].id;
+                    }
                 }
             }
         }
