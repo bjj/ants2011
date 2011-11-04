@@ -48,7 +48,7 @@ struct Move
 struct Bot
 {
     State state;
-    Edt e_food, e_explore, e_attack, e_defend, e_enemies, e_self;
+    Edt e_food, e_explore, e_revisit, e_attack, e_defend, e_enemies, e_self;
     Grid<bool> busy;
     Grid<bool> combatOccupied;
     std::vector<Location> interesting;
@@ -59,7 +59,8 @@ struct Bot
 
     void makeMoves();   //makes moves for a single turn
     void endTurn();     //indicates to the engine that it has made its moves
-    std::queue<Location> visited_frontier();
+    template <typename Predicate>
+    std::queue<Location> frontier();
     Move pickMove(const Location &loc) const;
 
     void combat(Move::close_queue &moves, std::set<Location> &sessile);

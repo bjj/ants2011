@@ -11,6 +11,7 @@ using namespace std;
 Bot::Bot()
     : e_food(state)
     , e_explore(state)
+    , e_revisit(state)
     , e_attack(state)
     , e_defend(state)
     , e_enemies(state)
@@ -54,20 +55,22 @@ void Bot::playGame()
  * Great Unknown will be wrong (they should flood with "1") but we don't
  * care because we're not there!
  */
-queue<Location> Bot::visited_frontier()
+template <typename Predicate>
+queue<Location> Bot::frontier()
 {
+    Predicate pred;
     queue<Location> frontier;
 
     for (int r = 0; r < state.rows; ++r) {
         int below = (r + 1) % state.rows;
         int above = (r - 1 + state.rows) % state.rows;
-        bool prevSeen = state.grid[r][state.cols-1].wasVisible;
-        bool nextSeen = state.grid[r][0].wasVisible;
+        bool prevSeen = pred(state.grid[r][state.cols-1]);
+        bool nextSeen = pred(state.grid[r][0]);
         for (int c = 1; c < state.cols; ++c) {
             bool seen = nextSeen;
-            nextSeen = state.grid[r][c].wasVisible;
-            bool aboveSeen = state.grid[above][c-1].wasVisible;
-            bool belowSeen = state.grid[below][c-1].wasVisible;
+            nextSeen = pred(state.grid[r][c]);
+            bool aboveSeen = pred(state.grid[above][c-1]);
+            bool belowSeen = pred(state.grid[below][c-1]);
             if (!state.grid[r][c-1].isWater && !seen && (prevSeen | nextSeen | aboveSeen | belowSeen)) {
                 frontier.push(Location(r,c));
                 state.grid[r][c-1].frontier = 1;
@@ -78,27 +81,43 @@ queue<Location> Bot::visited_frontier()
     return frontier;
 }
 
+struct Visited {
+    bool operator () (const Square &square) const
+    {
+        return square.wasVisible;
+    }
+};
+
+struct Visible {
+    bool operator () (const Square &square) const
+    {
+        return square.isVisible;
+    }
+};
+
 static inline int costInflect(int c, int breakpoint, int mul, int div)
 {
     return c <= breakpoint ? c : (c * mul / div);
 }
 
 static inline Move
-makeMove(const Location &loc, const Edt &edt, int breakpoint = 99999, int mul = 1, int div = 1)
+makeMove(const Location &loc, const Edt &edt, int add = 0, int breakpoint = 99999, int mul = 1, int div = 1)
 {
     int close = 9999;
     int dir = edt.gradient(loc, &close);
     int score = close <= breakpoint ? close : (close * mul / div);
+    score += add;
     return Move(loc, dir, score, close);
 }
 
 Move Bot::pickMove(const Location &loc) const
 {
     Move::score_queue pick;
-    pick.push(makeMove(loc, e_food, 8, 5, 2));
+    pick.push(makeMove(loc, e_food, 0, 8, 5, 2));
     pick.push(makeMove(loc, e_explore));
-    pick.push(makeMove(loc, e_attack, 5, 2, 3));
-    pick.push(makeMove(loc, e_defend, 4, 2, 1));
+    pick.push(makeMove(loc, e_revisit, 8, 0, 2, 1));
+    pick.push(makeMove(loc, e_attack, 0, 20, 2, 3));
+    pick.push(makeMove(loc, e_defend, 0, 4, 2, 1));
     return pick.top();
 }
 
@@ -107,8 +126,10 @@ void Bot::makeMoves()
 {
     state.bug << "turn " << state.turn << ":" << endl;
 
-    queue<Location> frontier = visited_frontier();
+    queue<Location> frontier = this->frontier<Visited>();
     e_explore.update(frontier);
+    frontier = this->frontier<Visible>();
+    e_revisit.update(frontier);
 
     state.bug << state << endl;
     //state.bug << e_explore << endl;
