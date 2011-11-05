@@ -109,7 +109,7 @@ private:
         if (enemy.weakness == 0)
             return 10;
         else if (enemy.weakness >= 2)
-            return 20;
+            return 18 + enemy.weakness;
         else
             return 0;
     }
