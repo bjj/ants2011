@@ -102,16 +102,14 @@ void State::updateVisionInformation()
             }
         }
     }
-    vector<Location> hills;
-    for (set<Location>::iterator it = allEnemyHills.begin(); it != allEnemyHills.end(); ++it) {
+    for (set<Location>::iterator it = allEnemyHills.begin(); it != allEnemyHills.end();) {
         const Square &square = grid[(*it).row][(*it).col];
         if (square.isVisible && !square.isHill)
-            continue;
-        hills.push_back(*it);
+            allEnemyHills.erase(it++);
+        else
+            it++;
     }
-    allEnemyHills.clear();
-    copy(hills.begin(), hills.end(), inserter(allEnemyHills, allEnemyHills.begin()));
-};
+}
 
 /*
     This is the output function for a state. It will add a char map
