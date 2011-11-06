@@ -6,6 +6,7 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 
 #include "State.h"
 #include "grid.h"
@@ -20,6 +21,14 @@ class Edt : public Grid<int>
 public:
     Edt(std::string _name, State &_state);
     void update(std::queue<Location> &food);
+    template <typename I>
+    void update(I begin, I end)
+    {
+        std::queue<Location> food;
+        for (; begin != end; ++begin)
+            food.push(*begin);
+        update(food);
+    }
     int gradient(const Location &loc, int *close = 0) const
     {
         if (empty_)

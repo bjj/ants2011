@@ -133,20 +133,9 @@ void Bot::makeMoves()
     state.bug << state << endl;
     //state.bug << e_explore << endl;
 
-    queue<Location> enemies;
-    for (State::iterator it = state.enemyAnts.begin(); it != state.enemyAnts.end(); ++it)
-        enemies.push(*it);
-    e_enemies.update(enemies);
-
-    queue<Location> myants;
-    for (State::iterator it = state.myAnts.begin(); it != state.myAnts.end(); ++it)
-        myants.push(*it);
-    e_self.update(myants);
-
-    queue<Location> food;
-    for (set<Location>::iterator it = state.allFood.begin(); it != state.allFood.end(); ++it)
-        food.push(*it);
-    e_food.update(food);
+    e_enemies.update(state.enemyAnts.begin(), state.enemyAnts.end());
+    e_self.update(state.myAnts.begin(), state.myAnts.end());
+    e_food.update(state.allFood.begin(), state.allFood.end());
 
     queue<Location> victims;
     if (state.myAnts.size() > 5) {
