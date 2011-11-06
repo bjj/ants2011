@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+enum { LocInf = 999999 };
+
 /*
     struct for representing locations in the grid.
 */

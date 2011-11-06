@@ -8,21 +8,22 @@
 Edt::Edt(std::string _name, State &_state)
     : Grid<int>(_state)
     , name(_name)
+    , empty_(true)
 {
     ;
 }
 
 inline void
-Edt::enqueue(std::queue<Location> & q, int r, int c)
+Edt::enqueue(std::queue<QElem> & q, int why, int r, int c)
 {
     r = (r + state.rows) % state.rows;
     c = (c + state.cols) % state.cols;
     if ((*this)(r, c) == 0)
-        q.push(Location(r, c));
+        q.push(QElem(r, c, why));
 }
 
 void
-Edt::update(std::queue<Location> &food)
+Edt::update(std::queue<QElem> &food)
 {
     reset();
 
@@ -35,13 +36,14 @@ Edt::update(std::queue<Location> &food)
         }
     }
 
-    const Location marker(-1, -1);
+    const QElem marker(-1, -1, -1);
     food.push(marker);
     int d = 1;
     while (!food.empty()) {
-        const Location &loc = food.front();
-        const int r = loc.row;
-        const int c = loc.col;
+        const QElem &qe = food.front();
+        const int r = qe.loc.row;
+        const int c = qe.loc.col;
+        const int why = qe.why;
         food.pop();
         if (r == -1) {
             if (!food.empty())
@@ -51,10 +53,10 @@ Edt::update(std::queue<Location> &food)
         }
         if ((*this)(r, c) == 0) {
             (*this)(r, c) = d;
-            enqueue(food, r+1, c);
-            enqueue(food, r, c+1);
-            enqueue(food, r-1, c);
-            enqueue(food, r, c-1);
+            enqueue(food, why, r+1, c);
+            enqueue(food, why, r, c+1);
+            enqueue(food, why, r-1, c);
+            enqueue(food, why, r, c-1);
         }
     }
 

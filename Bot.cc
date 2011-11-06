@@ -49,17 +49,17 @@ void Bot::playGame()
 }
 
 /**
- * Produce a queue of nodes that are on the frontier of the unexplored
+ * Produce a vector of nodes that are on the frontier of the unexplored
  * area of the map.  This is suitable for EDT to produce a map that
  * encourages exploration.  The distance-to-unexplored values of the
  * Great Unknown will be wrong (they should flood with "1") but we don't
  * care because we're not there!
  */
 template <typename Predicate>
-queue<Location> Bot::frontier()
+vector<Location> Bot::frontier()
 {
     Predicate pred;
-    queue<Location> frontier;
+    vector<Location> frontier;
 
     for (int r = 0; r < state.rows; ++r) {
         int below = (r + 1) % state.rows;
@@ -72,7 +72,7 @@ queue<Location> Bot::frontier()
             bool aboveSeen = pred(state.grid[above][c-1]);
             bool belowSeen = pred(state.grid[below][c-1]);
             if (!state.grid[r][c-1].isWater && !seen && (prevSeen | nextSeen | aboveSeen | belowSeen)) {
-                frontier.push(Location(r,c));
+                frontier.push_back(Location(r,c));
             }
             prevSeen = seen;
         }
@@ -125,10 +125,10 @@ void Bot::makeMoves()
 {
     state.bug << "turn " << state.turn << ":" << endl;
 
-    queue<Location> frontier = this->frontier<Visited>();
-    e_explore.update(frontier);
+    vector<Location> frontier = this->frontier<Visited>();
+    e_explore.update(frontier.begin(), frontier.end());
     frontier = this->frontier<Visible>();
-    e_revisit.update(frontier);
+    e_revisit.update(frontier.begin(), frontier.end());
 
     state.bug << state << endl;
     //state.bug << e_explore << endl;
@@ -137,15 +137,15 @@ void Bot::makeMoves()
     e_self.update(state.myAnts.begin(), state.myAnts.end());
     e_food.update(state.allFood.begin(), state.allFood.end());
 
-    queue<Location> victims;
+    vector<Location> victims;
     if (state.myAnts.size() > 5) {
         int meekness = 20 - state.myAnts.size();
         for (set<Location>::iterator it = state.allEnemyHills.begin(); it != state.allEnemyHills.end(); ++it) {
             if (e_enemies.empty() || e_enemies(*it) > meekness)
-                victims.push(*it);
+                victims.push_back(*it);
         }
     }
-    e_attack.update(victims);
+    e_attack.update(victims.begin(), victims.end());
 
     busy.reset();
     for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
@@ -157,7 +157,7 @@ void Bot::makeMoves()
 
     combat(moves, sessile);
 
-    queue<Location> defense;
+    vector<Location> defense;
     int defenders = state.myAnts.size() - 4;
     for (State::iterator it = state.myHills.begin(); defenders > 0 && it != state.myHills.end(); ++it) {
         static const int formation[4][2] = { {-1,-1}, {-1,1}, {1,-1}, {1,1} };
@@ -169,11 +169,11 @@ void Bot::makeMoves()
             if (square.ant == 0)
                 sessile.insert(loc);
             else if (!square.isWater)
-                defense.push(loc);
+                defense.push_back(loc);
             defenders--;
         }
     }
-    e_defend.update(defense);
+    e_defend.update(defense.begin(), defense.end());
 
     for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
         const Location & loc = state.myAnts[ant];

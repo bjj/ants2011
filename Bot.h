@@ -68,7 +68,7 @@ struct Bot
     void makeMoves();   //makes moves for a single turn
     void endTurn();     //indicates to the engine that it has made its moves
     template <typename Predicate>
-    std::queue<Location> frontier();
+    std::vector<Location> frontier();
     Move pickMove(const Location &loc) const;
     void visualize();
 
