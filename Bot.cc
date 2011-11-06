@@ -9,13 +9,13 @@ using namespace std;
 
 //constructor
 Bot::Bot()
-    : e_food(state)
-    , e_explore(state)
-    , e_revisit(state)
-    , e_attack(state)
-    , e_defend(state)
-    , e_enemies(state)
-    , e_self(state)
+    : e_food("food", state)
+    , e_explore("explore", state)
+    , e_revisit("revisit", state)
+    , e_attack("attack", state)
+    , e_defend("defend", state)
+    , e_enemies("enemies", state)
+    , e_self("self", state)
     , busy(state)
     , combatOccupied(state)
 {
@@ -73,7 +73,6 @@ queue<Location> Bot::frontier()
             bool belowSeen = pred(state.grid[below][c-1]);
             if (!state.grid[r][c-1].isWater && !seen && (prevSeen | nextSeen | aboveSeen | belowSeen)) {
                 frontier.push(Location(r,c));
-                state.grid[r][c-1].frontier = 1;
             }
             prevSeen = seen;
         }
@@ -107,7 +106,7 @@ makeMove(const Location &loc, const Edt &edt, int add = 0, int breakpoint = 9999
     int dir = edt.gradient(loc, &close);
     int score = close <= breakpoint ? close : (close * mul / div);
     score += add;
-    return Move(loc, dir, score, close);
+    return Move(loc, dir, score, close, edt.name);
 }
 
 Move Bot::pickMove(const Location &loc) const
@@ -158,7 +157,6 @@ void Bot::makeMoves()
         }
     }
     e_attack.update(victims);
-
 
     busy.reset();
     for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
@@ -213,7 +211,7 @@ void Bot::makeMoves()
         Location new_loc = state.getLocation(move.loc, dir);
         //if (!busy(new_loc) && e_food(new_loc) != 9999 && e_enemies(new_loc) > avoid) {
         if (!busy(new_loc) && e_food(new_loc) != 9999) {
-            state.bug << "move " << move.loc << ": " << CDIRECTIONS[dir] << endl;
+            state.bug << "move " << move.loc << ": " << CDIRECTIONS[dir] << " [" << *move.why << "]" << endl;
             state.makeMove(move.loc, dir);
             busy(move.loc) = false;
             busy(new_loc) = true;

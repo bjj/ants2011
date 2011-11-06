@@ -9,8 +9,15 @@
 
 struct Move
 {
-    Move(const Location &l, int d, int s, int c)
-        : loc(l), dir(d), score(s), close(c) { }
+    Move(const Location &l, int d, int s, int c, const std::string &w)
+        : loc(l), dir(d), score(s), close(c), why(&w) { }
+    Move(const Move &other)
+        : loc(other.loc)
+        , dir(other.dir)
+        , score(other.score)
+        , close(other.close)
+        , why(other.why)
+    { }
 
 
     struct BestScore
@@ -40,6 +47,7 @@ struct Move
 
     Location loc;
     int dir, score, close;
+    const std::string *why;
 };
 
 /*

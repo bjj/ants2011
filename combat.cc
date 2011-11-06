@@ -261,7 +261,8 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     state.bug << best;
 
     for (uint i = 0; i < best.ants.size(); ++i) {
+        static const string why("combat");
         sessile.insert(best.ants[i].loc);
-        moves.push(Move(best.ants[i].loc, best.ants[i].dir, 1, 1));
+        moves.push(Move(best.ants[i].loc, best.ants[i].dir, 1, 1, why));
     }
 }

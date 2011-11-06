@@ -5,8 +5,9 @@
 
 #include <stdio.h>
 
-Edt::Edt(State &_state)
+Edt::Edt(std::string _name, State &_state)
     : Grid<int>(_state)
+    , name(_name)
 {
     ;
 }

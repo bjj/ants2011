@@ -9,7 +9,6 @@
 struct Square
 {
     bool isVisible, wasVisible, isWater, isHill, isFood;
-    bool frontier;
     int ant, hillPlayer;
     //std::vector<int> deadAnts;
 
@@ -22,7 +21,6 @@ struct Square
     //resets the information for the square except water information
     void reset()
     {
-        frontier = 0;
         isVisible = 0;
         isHill = 0;
         isFood = 0;

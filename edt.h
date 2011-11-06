@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <queue>
+#include <string>
 #include <algorithm>
 #include <iostream>
 
@@ -17,7 +18,7 @@ std::ostream& operator<<(std::ostream &os, const Edt &edt);
 class Edt : public Grid<int>
 {
 public:
-    Edt(State &_state);
+    Edt(std::string _name, State &_state);
     void update(std::queue<Location> &food);
     int gradient(const Location &loc, int *close = 0) const
     {
@@ -38,6 +39,8 @@ public:
     }
     bool empty() const { return empty_; }
     double euclidean(const Location &loc, int limit = 9999) const;
+
+    std::string name;
 
 protected:
     friend std::ostream& operator<<(std::ostream &os, const Edt &edt);

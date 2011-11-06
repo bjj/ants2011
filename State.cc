@@ -130,9 +130,7 @@ ostream& operator<<(ostream &os, const State &state)
     {
         for(int col=0; col<state.cols; col++)
         {
-            if(state.grid[row][col].frontier)
-                os << '@';
-            else if(state.grid[row][col].isWater)
+            if(state.grid[row][col].isWater)
                 os << '%';
             else if(state.grid[row][col].isFood)
                 os << '*';
