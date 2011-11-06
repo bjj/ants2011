@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-c -Wall
 LDFLAGS=-O2 -lm
-SOURCES=Bot.cc MyBot.cc State.cc edt.cc Location.cc combat.cc
+SOURCES=Bot.cc MyBot.cc State.cc edt.cc Location.cc combat.cc VisBot.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=MyBot
 
@@ -10,6 +10,7 @@ CFLAGS += -g
 #CFLAGS += -pg
 #LDFLAGS += -pg
 CFLAGS += -DDEBUG
+CFLAGS += -DVISUALIZER
 
 CFLAGS+=-O3 -funroll-loops
 all: $(OBJECTS) $(EXECUTABLE)

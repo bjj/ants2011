@@ -200,6 +200,8 @@ void Bot::makeMoves()
             moves.push(m);
     }
 
+    visualize();
+
     Move::close_queue retry;
     bool moved = false;
     int angle = 0;

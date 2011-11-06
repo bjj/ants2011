@@ -70,6 +70,7 @@ struct Bot
     template <typename Predicate>
     std::queue<Location> frontier();
     Move pickMove(const Location &loc) const;
+    void visualize();
 
     void combat(Move::close_queue &moves, std::set<Location> &sessile);
 

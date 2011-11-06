@@ -15,6 +15,7 @@
 
 #include "Timer.h"
 #include "Bug.h"
+#include "Visualizer.h"
 #include "Square.h"
 #include "Location.h"
 
@@ -53,6 +54,7 @@ struct State
 
     Timer timer;
     mutable Bug bug;
+    mutable Visualizer v;
 
     /*
         Functions
