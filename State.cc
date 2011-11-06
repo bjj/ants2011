@@ -109,6 +109,13 @@ void State::updateVisionInformation()
         else
             it++;
     }
+    for (set<Location>::iterator it = allFood.begin(); it != allFood.end();) {
+        const Square &square = grid[(*it).row][(*it).col];
+        if (square.isVisible && !square.isFood)
+            allFood.erase(it++);
+        else
+            it++;
+    }
 }
 
 /*
@@ -225,6 +232,7 @@ istream& operator>>(istream &is, State &state)
                 is >> row >> col;
                 state.grid[row][col].isFood = 1;
                 state.food.push_back(Location(row, col));
+                state.allFood.insert(Location(row, col));
             }
             else if(inputType == "a") //live ant square
             {
@@ -238,7 +246,7 @@ istream& operator>>(istream &is, State &state)
             else if(inputType == "d") //dead ant square
             {
                 is >> row >> col >> player;
-                state.grid[row][col].deadAnts.push_back(player);
+                state.grid[row][col].putDeadAnt(player);
             }
             else if(inputType == "h")
             {

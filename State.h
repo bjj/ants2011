@@ -48,7 +48,7 @@ struct State
 
     std::vector<std::vector<Square> > grid;
     std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
-    std::set<Location> allEnemyHills;
+    std::set<Location> allEnemyHills, allFood;
     typedef std::vector<Location>::iterator iterator;
 
     Timer timer;

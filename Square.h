@@ -11,7 +11,7 @@ struct Square
     bool isVisible, wasVisible, isWater, isHill, isFood;
     bool frontier;
     int ant, hillPlayer;
-    std::vector<int> deadAnts;
+    //std::vector<int> deadAnts;
 
     Square()
     {
@@ -27,13 +27,18 @@ struct Square
         isHill = 0;
         isFood = 0;
         ant = hillPlayer = -1;
-        deadAnts.clear();
+        //deadAnts.clear();
     }
 
     void setVisible()
     {
         isVisible = 1;
         wasVisible = 1;
+    }
+
+    void putDeadAnt(int who)
+    {
+        //deadAnts.push_back(who);
     }
 
 

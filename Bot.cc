@@ -145,7 +145,7 @@ void Bot::makeMoves()
     e_self.update(myants);
 
     queue<Location> food;
-    for (State::iterator it = state.food.begin(); it != state.food.end(); ++it)
+    for (set<Location>::iterator it = state.allFood.begin(); it != state.allFood.end(); ++it)
         food.push(*it);
     e_food.update(food);
 
@@ -205,7 +205,7 @@ void Bot::makeMoves()
     Move::close_queue retry;
     bool moved = false;
     int angle = 0;
-    int avoid = moves.size() < 5 ? (state.attackradius + 2) : 0;
+    //int avoid = moves.size() < 5 ? (state.attackradius + 2) : 0;
     static const int *rotate[] = { AHEAD, RIGHT, LEFT };
     while (!moves.empty()) {
         const Move &move = moves.top();
