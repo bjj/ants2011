@@ -3,39 +3,54 @@
 
 #include <string.h>
 
+#include "Location.h"
+
 class State;
+
+extern int getStateRows(const State &state);
+extern int getStateCols(const State &state);
 
 template <typename T>
 class Grid
 {
 public:
-    Grid(State &_state) : state(_state), data(0) { }
+    Grid() : rows(0), cols(0), data(0) { }
+    ~Grid() { delete data; }
+
+    void init(const State &state) {
+        if (!data) {
+            rows = getStateRows(state);
+            cols = getStateCols(state);
+            data = new T[rows * cols];
+        }
+    }
 
     void reset()
     {
-        if (data == 0)
-            data = new T[state.rows * state.cols];
-        memset(data, 0, state.rows * state.cols * sizeof(T));
+        // only appropriate for some things...
+        memset(data, 0, rows * cols * sizeof(T));
     }
+
     T & operator () (const Location &loc)
     {
-        return data[loc.row * state.cols + loc.col];
+        return data[loc.row * cols + loc.col];
     }
     T & operator () (int r, int c)
     {
-        return data[r * state.cols + c];
+        return data[r * cols + c];
     }
     const T & operator () (const Location &loc) const
     {
-        return data[loc.row * state.cols + loc.col];
+        return data[loc.row * cols + loc.col];
     }
     const T & operator () (int r, int c) const
     {
-        return data[r * state.cols + c];
+        return data[r * cols + c];
     }
 
 protected:
-    const State &state;
+
+    int rows, cols;
     T *data;
 };
 

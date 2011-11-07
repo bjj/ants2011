@@ -61,14 +61,16 @@ public:
     bool empty() const { return empty_; }
     double euclidean(const Location &loc, int limit = 9999) const;
 
-    std::string name;
-
 protected:
     void update(std::queue<QElem> &food);
     friend std::ostream& operator<<(std::ostream &os, const Edt &edt);
 
     void enqueue(std::queue<QElem> & q, int why, int r, int c);
 
+    State &state;
+public:
+    std::string name;
+protected:
     bool empty_;
     std::vector<Location> origins;
 };

@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 Edt::Edt(std::string _name, State &_state)
-    : Grid<int>(_state)
+    : state(_state)
     , name(_name)
     , empty_(true)
 {
@@ -25,7 +25,7 @@ Edt::enqueue(std::queue<QElem> & q, int why, int r, int c)
 void
 Edt::update(std::queue<QElem> &food)
 {
-    reset();
+    init(state);
 
     empty_ = food.empty();
 
@@ -33,6 +33,8 @@ Edt::update(std::queue<QElem> &food)
         for (int c = 0; c < state.cols; ++c) {
             if (state.grid[r][c].isWater || state.grid[r][c].hillPlayer == 0)
                 (*this)(r, c) = 9999;
+            else
+                (*this)(r, c) = 0;
         }
     }
 

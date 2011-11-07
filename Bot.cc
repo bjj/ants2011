@@ -16,8 +16,8 @@ Bot::Bot()
     , e_defend("defend", state)
     , e_enemies("enemies", state)
     , e_self("self", state)
-    , busy(state)
-    , combatOccupied(state)
+    , busy()
+    , combatOccupied()
 {
     srandom(time(0));
     srand48(time(0));
@@ -34,6 +34,9 @@ void Bot::playGame()
 
     state.setup();
     endTurn();
+
+    busy.init(state);
+    combatOccupied.init(state);
 
     for (int i = 0; i < 10; ++i) {
         interesting.push_back(Location(random() % state.rows, random() % state.cols));
