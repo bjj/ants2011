@@ -107,14 +107,14 @@ void State::updateVisionInformation()
         if (square.isVisible && !square.isHill)
             allEnemyHills.erase(it++);
         else
-            it++;
+            ++it;
     }
     for (set<Location>::iterator it = allFood.begin(); it != allFood.end();) {
         const Square &square = grid[(*it).row][(*it).col];
         if (square.isVisible && !square.isFood)
             allFood.erase(it++);
         else
-            it++;
+            ++it;
     }
 }
 
