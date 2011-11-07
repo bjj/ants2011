@@ -47,6 +47,14 @@ public:
     {
         return data[r * cols + c];
     }
+    T * operator [] (const int row)
+    {
+        return data + row * cols;
+    }
+    const T * operator [] (const int row) const
+    {
+        return data + row * cols;
+    }
 
 protected:
 
