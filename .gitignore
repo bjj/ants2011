@@ -4,3 +4,4 @@ MyBot
 debug.txt
 debug.*.txt
 *.gmon
+test-*
