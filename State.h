@@ -18,6 +18,7 @@
 #include "Visualizer.h"
 #include "Square.h"
 #include "Location.h"
+#include "grid.h"
 
 /*
     constants
@@ -47,7 +48,7 @@ struct State
     bool gameover;
     int64_t seed;
 
-    std::vector<std::vector<Square> > grid;
+    Grid<Square> grid;
     std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
     std::set<Location> allEnemyHills, allFood;
     typedef std::vector<Location>::iterator iterator;
