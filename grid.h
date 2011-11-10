@@ -83,7 +83,6 @@ public:
         for (int i = 0; i < end; ++i)
             data[i] =rhs.data[i];
     }
-    ~Grid() { delete data; }
 
 protected:
     template <typename> friend class GridBfs;
