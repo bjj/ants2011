@@ -10,6 +10,8 @@ State::State()
     rows = cols = 0;
     gameover = 0;
     turn = 0;
+    noPlayers = noHills = 0;
+    avgHillSpacing = 0;
     stringstream ss;
     ss << "debug." << getpid() << ".txt";
     bug.open(ss.str());
@@ -191,6 +193,8 @@ istream& operator>>(istream &is, State &state)
                 is >> state.turns;
             else if(inputType == "player_seed")
                 is >> state.seed;
+            else if(inputType == "players") //player information
+                is >> state.noPlayers;
             else if(inputType == "viewradius2")
             {
                 is >> state.viewradius;
@@ -259,8 +263,6 @@ istream& operator>>(istream &is, State &state)
                 }
 
             }
-            else if(inputType == "players") //player information
-                is >> state.noPlayers;
             else if(inputType == "scores") //score information
             {
                 state.scores = vector<double>(state.noPlayers, 0.0);

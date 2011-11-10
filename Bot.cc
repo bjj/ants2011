@@ -47,6 +47,13 @@ void Bot::playGame()
     //continues making moves while the game is not over
     while(cin >> state)
     {
+        if (state.turn == 1) {
+            if (state.noPlayers == 0)
+                state.noPlayers = 5; // not sent by server yet
+            state.noHills = state.myHills.size();
+            state.avgHillSpacing = sqrt(state.rows * state.cols / state.noPlayers / state.noHills);
+            state.bug << state.noHills << " hills, " << state.noPlayers << " players: spacing " << state.avgHillSpacing << endl;
+        }
         state.updateVisionInformation();
         makeMoves();
         endTurn();
@@ -164,7 +171,14 @@ void Bot::makeMoves()
     eat(moves, sessile);
 
     vector<Location> defense;
-    int defenders = state.myAnts.size() - 4;
+    int defenders = 0;
+    if (state.turn < state.avgHillSpacing) {
+        defenders = 0;
+    } else if (state.myAnts.size() < 10) {
+        defenders = 0;
+    } else {
+        defenders = state.myAnts.size() / 10;
+    }
     for (State::iterator it = state.myHills.begin(); defenders > 0 && it != state.myHills.end(); ++it) {
         static const int formation[4][2] = { {-1,-1}, {-1,1}, {1,-1}, {1,1} };
 

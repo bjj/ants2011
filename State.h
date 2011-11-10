@@ -41,8 +41,9 @@ struct State
     */
     int rows, cols,
         turn, turns,
-        noPlayers;
+        noPlayers, noHills;
     double attackradius, spawnradius, viewradius;
+    double avgHillSpacing;
     double loadtime, turntime;
     std::vector<double> scores;
     bool gameover;
