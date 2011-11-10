@@ -109,9 +109,9 @@ private:
         if (enemy.weakness == 0)
             return 10;
         else if (enemy.weakness >= 2)
-            return 18 + enemy.weakness;
+            return 20 + (enemy.weakness - 2) * 4;
         else
-            return 0;
+            return -1;
     }
 
     int score(const Ant &ant) const
@@ -192,8 +192,8 @@ ostream & operator << (ostream &os, const Combat &combat)
  */
 void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
 {
-    double close = state.attackradius + 2;  // 2 moves
-    int limit = ceil(state.attackradius) + 2;     // looser manhattan limit
+    double close = state.attackradius + 2.5;  // 2 moves
+    int limit = ceil(state.attackradius) + 3;     // looser manhattan limit
 
     // Reset a grid of locations for the search to use to determine what
     // locations are occupied.  Initialize it with true for impassible (or
@@ -244,11 +244,13 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                         last_threat_id = enemies[j].id;
                     }
                 }
-                ant.moves[d].bonus = -(threatened > 1) * 10;
+                ant.moves[d].bonus = -threatened * (10 / 5);
                 if (state.grid[dest.row][dest.col].hillPlayer > 0)
                     ant.moves[d].bonus += 200;
-                if (e_food(dest) == 2)
-                    ant.moves[d].bonus += 20;
+                if (e_attack(dest) < e_attack(*it))
+                    ant.moves[d].bonus += 2;
+                if (e_food(dest) < 5 && e_food(dest) < e_food(*it))
+                    ant.moves[d].bonus += 3;
             }
         }
     }
@@ -265,4 +267,13 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
         sessile.insert(best.ants[i].loc);
         moves.push(Move(best.ants[i].loc, best.ants[i].dir, 1, 1, why));
     }
+
+#ifdef TEST_COMBAT_IMPROVE
+    double score = -best.e();
+    best = anneal(combat);
+    double score2 = -best.e();
+    if (score2 > score)
+        state.bug << "IMPROVE over " << score << endl << best;
+#endif /* TEST_COMBAT_IMPROVE */
+
 }

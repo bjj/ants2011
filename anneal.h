@@ -15,7 +15,7 @@ public:
     Solution operator () (Solution &s)
     {
         int per_temp = s.iterations();
-        double temp = 1000.0;
+        double temp = 2000.0;
         Solution best(s);
         double ebest = best.e();
 
