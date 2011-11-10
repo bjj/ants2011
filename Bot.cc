@@ -4,6 +4,7 @@
 #include "Bot.h"
 
 #include "edt.h"
+#include "gridbfs.h"
 
 using namespace std;
 
@@ -155,11 +156,12 @@ void Bot::makeMoves()
     for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
         busy(state.myAnts[ant]) = true;
     }
-    Move::close_queue moves;
 
+    Move::close_queue moves;
     set<Location> sessile;
 
     combat(moves, sessile);
+    eat(moves, sessile);
 
     vector<Location> defense;
     int defenders = state.myAnts.size() - 4;
@@ -223,6 +225,10 @@ void Bot::makeMoves()
     }
 
     state.bug << "time taken: " << state.timer.getTime() << "ms" << endl << endl;
+}
+
+void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
+{
 }
 
 //finishes the turn
