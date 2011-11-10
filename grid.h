@@ -1,6 +1,7 @@
 #ifndef GRID_H_
 #define GRID_H_
 
+#include <algorithm>
 #include <string.h>
 
 #include "Location.h"
@@ -21,8 +22,7 @@ public:
     {
         data = new T[rows * cols];
         int end = rows * cols;
-        for (int i = 0; i < end; ++i)
-            data[i] = other.data[i];
+        std::copy(other.data, other.data + rows * cols, data);
     }
     ~Grid() { delete data; }
 
@@ -46,8 +46,7 @@ public:
 
     void reset()
     {
-        // only appropriate for some things...
-        memset(data, 0, rows * cols * sizeof(T));
+        std::fill(data, data + rows * cols, T());
     }
 
     T & operator () (const Location &loc)
