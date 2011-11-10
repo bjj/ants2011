@@ -124,9 +124,9 @@ makeMove(const Location &loc, const Edt &edt, int add = 0, int breakpoint = 9999
 Move Bot::pickMove(const Location &loc) const
 {
     Move::score_queue pick;
-    pick.push(makeMove(loc, e_food, 0, 8, 5, 2));
+    //pick.push(makeMove(loc, e_food, 0, 8, 5, 2));
     pick.push(makeMove(loc, e_explore));
-    pick.push(makeMove(loc, e_revisit, 8, 0, 2, 1));
+    pick.push(makeMove(loc, e_revisit, 20, 0, 2, 1));
     pick.push(makeMove(loc, e_attack, 0, 20, 2, 3));
     pick.push(makeMove(loc, e_defend, 0, 4, 2, 1));
     return pick.top();
@@ -243,6 +243,51 @@ void Bot::makeMoves()
 
 void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
 {
+    Passable passable(state);
+    GridBfs<Passable> end;
+
+    state.v.setLineColor(0,0,200);
+
+    float explore = state.myAnts.size() > 4 ? 0.25 : 0.0;
+    priority_queue<pair<float, Location> > food;
+    for (set<Location>::iterator it = state.allFood.begin(); it != state.allFood.end(); ++it) {
+        float score = 0;
+        score += -e_self(*it);
+        score += 1 * state.grid(*it).isVisible;
+        score += 2 * (e_enemies(*it) > state.viewradius);
+        score += -5 * (e_enemies(*it) <= e_self(*it));
+        score += explore * max(0.0, state.viewradius - e_explore(*it));
+        food.push(make_pair(score, *it));
+    }
+    set<Location> ontheway;
+    while (!food.empty()) {
+        const Location loc = food.top().second;
+        food.pop();
+        GridBfs<Passable> bfs(state.grid, passable, loc);
+        for(++bfs; bfs != end; ++bfs) {
+            const Square &square = state.grid(*bfs);
+            //if (square.ant == 0 && e_food(*bfs) == bfs.distance()+1 && !sessile.count(*bfs)) {
+            if (ontheway.count(*bfs)) {
+                break;
+            } else if (square.ant == 0 && !sessile.count(*bfs)) {
+                static const string why("food+");
+                moves.push(Move(*bfs, bfs.direction(), 1, 1, why));
+                sessile.insert(*bfs);
+                ontheway.insert(state.getLocation(*bfs, bfs.direction()));
+                break;
+            } else if (square.isFood) {
+                // other food is closer to all ants
+                //break;
+            } else if (square.ant > 0) {
+                // someone else closer
+                //break;
+            } else if (bfs.distance() > 35) {
+                // too far
+                break;
+            }
+        }
+        state.v.arrow(loc, *bfs);
+    }
 }
 
 //finishes the turn
