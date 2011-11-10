@@ -128,7 +128,7 @@ Move Bot::pickMove(const Location &loc) const
     pick.push(makeMove(loc, e_explore));
     pick.push(makeMove(loc, e_revisit, 20, 0, 2, 1));
     pick.push(makeMove(loc, e_attack, 0, 20, 2, 3));
-    pick.push(makeMove(loc, e_defend, 0, 4, 2, 1));
+    pick.push(makeMove(loc, e_defend, 0, 8, 2, 1));
     return pick.top();
 }
 
@@ -179,18 +179,22 @@ void Bot::makeMoves()
     } else {
         defenders = state.myAnts.size() / 10;
     }
-    for (State::iterator it = state.myHills.begin(); defenders > 0 && it != state.myHills.end(); ++it) {
+    for (State::iterator it = state.myHills.begin(); it != state.myHills.end(); ++it) {
         static const int formation[4][2] = { {-1,-1}, {-1,1}, {1,-1}, {1,1} };
 
-        for (int i = 0; defenders > 0 && i < 4; ++i) {
+        for (int i = 0; i < 4; ++i) {
             const Location loc = state.deltaLocation(*it, formation[i][0], formation[i][1]);
             const Square &square = state.grid[loc.row][loc.col];
+            if (square.isWater)
+                continue;
+            bool urgent = e_enemies(loc) <= 8;
 
-            if (square.ant == 0)
-                sessile.insert(loc);
-            else if (!square.isWater)
-                defense.push_back(loc);
-            defenders--;
+            if (urgent || defenders-- > 0) {
+                if (square.ant == 0)
+                    sessile.insert(loc);
+                if (square.ant != 0 || urgent)
+                    defense.push_back(loc);
+            }
         }
     }
     e_defend.update(defense.begin(), defense.end());
