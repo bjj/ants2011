@@ -94,6 +94,21 @@ struct State
     void updateVisionInformation();
 };
 
+struct Passable
+{
+    Passable(const State &s) : state(&s) { }
+    //Passable() : state(0) { }
+
+    bool operator () (const Location &loc)
+    {
+        const Square &square = state->grid(loc);
+        return !(square.isWater || square.hillPlayer == 0);
+    }
+
+private:
+    const State *state;
+};
+
 std::ostream& operator<<(std::ostream &os, const State &state);
 std::istream& operator>>(std::istream &is, State &state);
 
