@@ -19,8 +19,6 @@ Bot::Bot()
     , busy()
     , combatOccupied()
 {
-    srandom(time(0));
-    srand48(time(0));
 }
 
 //plays a single game of Ants.
@@ -31,6 +29,9 @@ void Bot::playGame()
 
     if (state.rows == 0 || state.cols == 0)
         exit(0);
+
+    srandom(state.seed);
+    srand48(state.seed);
 
     state.setup();
     endTurn();
