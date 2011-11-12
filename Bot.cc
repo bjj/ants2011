@@ -224,7 +224,8 @@ void Bot::makeMoves()
         const Move &move = moves.top();
         int dir = rotate[angle][move.dir];
         Location new_loc = state.getLocation(move.loc, dir);
-        if (!busy(new_loc) && !state.grid(new_loc).isWater) {
+        const Square &square = state.grid(new_loc);
+        if (!busy(new_loc) && !square.isWater && !square.hillPlayer == 0) {
             state.bug << "move " << move.loc << ": " << CDIRECTIONS[dir] << " [" << *move.why << "]" << endl;
             state.makeMove(move.loc, dir);
             busy(move.loc) = false;
