@@ -111,6 +111,13 @@ void State::updateVisionInformation()
         else
             ++it;
     }
+    for (set<Location>::iterator it = allMyHills.begin(); it != allMyHills.end();) {
+        const Square &square = grid[(*it).row][(*it).col];
+        if (square.isVisible && !square.isHill)
+            allMyHills.erase(it++);
+        else
+            ++it;
+    }
     for (set<Location>::iterator it = allFood.begin(); it != allFood.end();) {
         const Square &square = grid[(*it).row][(*it).col];
         if (square.isVisible && !square.isFood)
@@ -255,9 +262,10 @@ istream& operator>>(istream &is, State &state)
                 is >> row >> col >> player;
                 state.grid[row][col].isHill = 1;
                 state.grid[row][col].hillPlayer = player;
-                if(player == 0)
+                if(player == 0) {
                     state.myHills.push_back(Location(row, col));
-                else {
+                    state.allMyHills.insert(Location(row, col));
+                } else {
                     state.enemyHills.push_back(Location(row, col));
                     state.allEnemyHills.insert(Location(row, col));
                 }

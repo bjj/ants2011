@@ -17,6 +17,7 @@ Bot::Bot()
     , e_defend("defend", state)
     , e_enemies("enemies", state)
     , e_self("self", state, false)
+    , e_myHills("home", state, false)
     , busy()
     , combatOccupied()
 {
@@ -161,6 +162,7 @@ void Bot::makeMoves()
     e_enemies.update(state.enemyAnts.begin(), state.enemyAnts.end());
     e_self.update(state.myAnts.begin(), state.myAnts.end());
     e_food.update(state.allFood.begin(), state.allFood.end());
+    e_myHills.update(state.allMyHills.begin(), state.allMyHills.end());
 
     vector<Location> victims;
     if (state.myAnts.size() > 5) {
