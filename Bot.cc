@@ -141,10 +141,14 @@ void Bot::makeMoves()
 
     if (1 || interesting.empty()) {
         int square = state.viewradius * M_SQRT2 - 1;
+        // ant would take (state.rows / square * square) * (state.cols / square)
+        // turns to explore everything
+        int timeToExploreWholeMap = state.rows * state.cols / square;
+        int maxAge = timeToExploreWholeMap * 2 / state.myAnts.size();
         for (int row = 0; row < state.rows; row += square) {
             for (int col = 0; col < state.cols; col += square) {
                 const Location loc(row, col);
-                if (state.turn - state.grid(loc).lastSeenTurn > 20)
+                if (state.turn - state.grid(loc).lastSeenTurn > maxAge)
                     interesting.insert(loc);
             }
         }
