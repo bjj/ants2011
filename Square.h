@@ -10,12 +10,14 @@ struct Square
 {
     bool isVisible, wasVisible, isWater, isHill, isFood;
     int ant, hillPlayer;
+    int lastSeenTurn;
     //std::vector<int> deadAnts;
 
     Square()
     {
         isVisible = wasVisible = isWater = isHill = isFood = 0;
         ant = hillPlayer = -1;
+        lastSeenTurn = -1000;
     };
 
     //resets the information for the square except water information
@@ -28,10 +30,11 @@ struct Square
         //deadAnts.clear();
     }
 
-    void setVisible()
+    void setVisible(int turn)
     {
         isVisible = 1;
         wasVisible = 1;
+        lastSeenTurn = turn;
     }
 
     void putDeadAnt(int who)

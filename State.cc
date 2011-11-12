@@ -83,7 +83,7 @@ void State::updateVisionInformation()
         locQueue.push(sLoc);
 
         std::vector<std::vector<bool> > visited(rows, std::vector<bool>(cols, 0));
-        grid[sLoc.row][sLoc.col].setVisible();
+        grid[sLoc.row][sLoc.col].setVisible(turn);
         visited[sLoc.row][sLoc.col] = 1;
 
         while(!locQueue.empty())
@@ -97,7 +97,7 @@ void State::updateVisionInformation()
 
                 if(!visited[nLoc.row][nLoc.col] && distance(sLoc, nLoc) <= viewradius)
                 {
-                    grid[nLoc.row][nLoc.col].setVisible();
+                    grid[nLoc.row][nLoc.col].setVisible(turn);
                     locQueue.push(nLoc);
                 }
                 visited[nLoc.row][nLoc.col] = 1;
