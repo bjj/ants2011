@@ -10,7 +10,7 @@ CFLAGS += -g
 #CFLAGS += -pg
 #LDFLAGS += -pg
 CFLAGS += -DDEBUG
-CFLAGS += -DVISUALIZER
+#CFLAGS += -DVISUALIZER
 
 CFLAGS+=-O3 -funroll-loops
 all: $(OBJECTS) $(EXECUTABLE)

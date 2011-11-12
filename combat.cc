@@ -63,7 +63,7 @@ public:
 
     double e() const
     {
-        return -(attack_score + defend_score * 0.25);
+        return -(attack_score + defend_score);
     }
 
     size_t iterations() const
@@ -107,11 +107,11 @@ private:
     int score(const Enemy &enemy) const
     {
         if (enemy.weakness == 0)
-            return 10;
+            return 0;
         else if (enemy.weakness >= 2)
-            return 20 + (enemy.weakness - 2) * 4;
+            return 10 + (enemy.weakness - 2) * 4;
         else
-            return -1;
+            return -10;
     }
 
     int score(const Ant &ant) const
@@ -234,19 +234,16 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                 if (*ant.moves[d].occupied)
                     continue;
                 int threatened = 0;
-                int last_threat_id = -1;
                 for (uint j = 0; j < enemies.size(); ++j) {
                     bool overlaps = state.distance(enemies[j].loc, dest) <=
                                                    state.attackradius;
                     ant.moves[d].overlap.push_back(overlaps);
-                    if (overlaps && enemies[j].id != last_threat_id) {
+                    if (overlaps)
                         threatened++;
-                        last_threat_id = enemies[j].id;
-                    }
                 }
                 ant.moves[d].bonus = -threatened * (10 / 5);
                 if (state.grid[dest.row][dest.col].hillPlayer > 0)
-                    ant.moves[d].bonus += 200;
+                    ant.moves[d].bonus += 50;
                 if (e_attack(dest) < e_attack(*it))
                     ant.moves[d].bonus += 2;
                 if (e_food(dest) < 5 && e_food(dest) < e_food(*it))
