@@ -98,16 +98,26 @@ struct State
 struct Passable
 {
     Passable(const State &s) : state(&s) { }
-    //Passable() : state(0) { }
+
+    bool operator () (const Location &loc)
+    {
+        const Square &square = state->grid(loc);
+        return !square.isWater;
+    }
+
+protected:
+    const State *state;
+};
+
+struct PassableButMyHills : public Passable
+{
+    PassableButMyHills(const State &s) : Passable(s) { }
 
     bool operator () (const Location &loc)
     {
         const Square &square = state->grid(loc);
         return !(square.isWater || square.hillPlayer == 0);
     }
-
-private:
-    const State *state;
 };
 
 std::ostream& operator<<(std::ostream &os, const State &state);
