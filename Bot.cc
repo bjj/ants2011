@@ -176,6 +176,10 @@ void Bot::makeMoves()
                 victims.push_back(*it);
         }
     }
+    for (State::iterator it = state.enemyAnts.begin(); it != state.enemyAnts.end(); ++it) {
+        if (e_myHills(*it) < state.viewradius + 2)
+            victims.push_back(*it);
+    }
     e_attack.update(victims.begin(), victims.end());
 
     busy.reset();
@@ -207,7 +211,8 @@ void Bot::makeMoves()
             const Square &square = state.grid[loc.row][loc.col];
             if (square.isWater)
                 continue;
-            bool urgent = e_enemies(loc) <= 8;
+            //bool urgent = e_enemies(loc) <= 8;
+            bool urgent = false;
 
             if (urgent || defenders-- > 0) {
                 if (square.ant == 0)
