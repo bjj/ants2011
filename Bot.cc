@@ -16,7 +16,7 @@ Bot::Bot()
     , e_attack("attack", state)
     , e_defend("defend", state)
     , e_enemies("enemies", state)
-    , e_self("self", state)
+    , e_self("self", state, false)
     , busy()
     , combatOccupied()
 {
@@ -224,8 +224,7 @@ void Bot::makeMoves()
         const Move &move = moves.top();
         int dir = rotate[angle][move.dir];
         Location new_loc = state.getLocation(move.loc, dir);
-        //if (!busy(new_loc) && e_food(new_loc) != 9999 && e_enemies(new_loc) > avoid) {
-        if (!busy(new_loc) && e_food(new_loc) != 9999) {
+        if (!busy(new_loc) && !state.grid(new_loc).isWater) {
             state.bug << "move " << move.loc << ": " << CDIRECTIONS[dir] << " [" << *move.why << "]" << endl;
             state.makeMove(move.loc, dir);
             busy(move.loc) = false;

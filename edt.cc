@@ -5,9 +5,10 @@
 
 #include <stdio.h>
 
-Edt::Edt(std::string _name, State &_state)
+Edt::Edt(std::string _name, State &_state, bool block)
     : state(_state)
     , name(_name)
+    , myHillsBlock(block)
     , empty_(true)
 {
     ;
@@ -31,7 +32,7 @@ Edt::update(std::queue<QElem> &food)
 
     for (int r = 0; r < state.rows; ++r) {
         for (int c = 0; c < state.cols; ++c) {
-            if (state.grid[r][c].isWater || state.grid[r][c].hillPlayer == 0)
+            if (state.grid[r][c].isWater || (myHillsBlock && state.grid[r][c].hillPlayer == 0))
                 (*this)(r, c) = 9999;
             else
                 (*this)(r, c) = 0;
