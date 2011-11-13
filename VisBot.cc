@@ -19,8 +19,5 @@ void Bot::visualize()
     state.v.setLineColor(255, 255, 0);
     for (uint i = 0; i < unseen.size(); ++i)
         state.v.star(unseen[i], 0.7, 0.8, 4, false);
-    state.v.setLineColor(0, 255, 0);
-    for (set<Location>::iterator it = interesting.begin(); it != interesting.end(); ++it)
-        state.v.star(*it, 0.7, 0.2, 5, true);
 #endif
 }

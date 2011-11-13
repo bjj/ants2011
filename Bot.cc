@@ -41,6 +41,10 @@ void Bot::playGame()
     busy.init(state);
     combatOccupied.init(state);
 
+    for (int i = 0; i < 10; ++i) {
+        interesting.push_back(Location(random() % state.rows, random() % state.cols));
+    }
+
     //continues making moves while the game is not over
     while(cin >> state)
     {
@@ -122,7 +126,7 @@ Move Bot::pickMove(const Location &loc) const
 {
     Move::score_queue pick;
     //pick.push(makeMove(loc, e_food, 0, 8, 5, 2));
-    //pick.push(makeMove(loc, e_explore));
+    pick.push(makeMove(loc, e_explore));
     pick.push(makeMove(loc, e_revisit, 20, 0, 2, 1));
     pick.push(makeMove(loc, e_attack, 0, 20, 2, 3));
     pick.push(makeMove(loc, e_defend, 0, 8, 2, 1));
@@ -138,23 +142,6 @@ void Bot::makeMoves()
     e_explore.update(frontier.begin(), frontier.end());
     frontier = this->frontier<Visible>();
     e_revisit.update(frontier.begin(), frontier.end());
-
-    if (1 || interesting.empty()) {
-        int square = state.viewradius * M_SQRT2 - 1;
-        for (int row = 0; row < state.rows; row += square) {
-            for (int col = 0; col < state.cols; col += square) {
-                const Location loc(row, col);
-                if (state.turn - state.grid(loc).lastSeenTurn > 20)
-                    interesting.insert(loc);
-            }
-        }
-    }
-    for (set<Location>::iterator it = interesting.begin(); it != interesting.end(); ) {
-        if (state.grid(*it).isVisible)
-            interesting.erase(it++);
-        else
-            ++it;
-    }
 
     state.bug << state << endl;
     //state.bug << e_explore << endl;
@@ -188,7 +175,6 @@ void Bot::makeMoves()
 
     combat(moves, sessile);
     eat(moves, sessile);
-    explore(moves, sessile);
 
     vector<Location> defense;
     int defenders = 0;
@@ -299,7 +285,6 @@ void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
                 moves.push(Move(*bfs, bfs.direction(), 1, 1, why));
                 sessile.insert(*bfs);
                 ontheway.insert(state.getLocation(*bfs, bfs.direction()));
-                state.v.arrow(loc, *bfs);
                 break;
             } else if (square.isFood) {
                 // other food is closer to all ants
@@ -312,47 +297,7 @@ void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
                 break;
             }
         }
-    }
-}
-
-void Bot::explore(Move::close_queue &moves, set<Location> &sessile)
-{
-    Passable passable(state);
-    GridBfs<Passable> end;
-
-    state.v.setLineColor(0,200,0);
-
-    priority_queue<pair<float, Location> > food;
-    for (set<Location>::iterator it = interesting.begin(); it != interesting.end(); ++it) {
-        float score = 0;
-        score += -2 * e_self(*it);
-        score += -1 * e_enemies(*it);
-        food.push(make_pair(score, *it));
-    }
-    while (!food.empty()) {
-        const Location loc = food.top().second;
-        food.pop();
-        GridBfs<Passable> bfs(state.grid, passable, loc);
-        for(++bfs; bfs != end; ++bfs) {
-            const Square &square = state.grid(*bfs);
-            //if (square.ant == 0 && e_food(*bfs) == bfs.distance()+1 && !sessile.count(*bfs)) {
-            if (square.ant == 0 && !sessile.count(*bfs)) {
-                static const string why("explore+");
-                moves.push(Move(*bfs, bfs.direction(), 1, 1, why));
-                sessile.insert(*bfs);
-                state.v.arrow(loc, *bfs);
-                break;
-            } else if (square.isFood) {
-                // food will draw us in
-                break;
-            } else if (square.ant > 0) {
-                // someone else closer
-                //break;
-            } else if (bfs.distance() > 45) {
-                // too far
-                break;
-            }
-        }
+        state.v.arrow(loc, *bfs);
     }
 }
 
