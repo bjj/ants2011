@@ -41,10 +41,6 @@ void Bot::playGame()
     busy.init(state);
     combatOccupied.init(state);
 
-    for (int i = 0; i < 10; ++i) {
-        interesting.push_back(Location(random() % state.rows, random() % state.cols));
-    }
-
     //continues making moves while the game is not over
     while(cin >> state)
     {

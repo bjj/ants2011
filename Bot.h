@@ -59,7 +59,7 @@ struct Bot
     Edt e_food, e_explore, e_revisit, e_attack, e_defend, e_enemies, e_self, e_myHills;
     Grid<bool> busy;
     Grid<bool> combatOccupied;
-    std::vector<Location> interesting;
+    std::set<Location> interesting;
 
     Bot();
 
