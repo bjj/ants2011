@@ -17,7 +17,7 @@ struct Square
     {
         isVisible = wasVisible = isWater = isHill = isFood = 0;
         ant = hillPlayer = -1;
-        lastSeenTurn = -1000000;
+        lastSeenTurn = -1000;
     };
 
     //resets the information for the square except water information
