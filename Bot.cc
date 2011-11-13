@@ -285,6 +285,7 @@ void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
                 moves.push(Move(*bfs, bfs.direction(), 1, 1, why));
                 sessile.insert(*bfs);
                 ontheway.insert(state.getLocation(*bfs, bfs.direction()));
+                state.v.arrow(loc, *bfs);
                 break;
             } else if (square.isFood) {
                 // other food is closer to all ants
@@ -297,7 +298,6 @@ void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
                 break;
             }
         }
-        state.v.arrow(loc, *bfs);
     }
 }
 
