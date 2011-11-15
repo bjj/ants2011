@@ -266,6 +266,7 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     }
 
 #ifdef TEST_COMBAT_IMPROVE
+// XXX this is probably wrong due to combatOccupied
     double score = -best.e();
     best = anneal(combat);
     double score2 = -best.e();
