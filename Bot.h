@@ -57,7 +57,7 @@ struct Bot
 {
     State state;
     Edt e_food, e_explore, e_revisit, e_attack, e_defend, e_enemies, e_self, e_myHills;
-    Grid<bool> busy;
+    Grid<char> busy;
     Grid<bool> combatOccupied;
     std::set<Location> interesting;
 

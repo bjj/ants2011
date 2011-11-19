@@ -163,7 +163,7 @@ void Bot::makeMoves()
 
     busy.reset();
     for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
-        busy(state.myAnts[ant]) = true;
+        busy(state.myAnts[ant]) = 1;
     }
 
     Move::close_queue moves;
@@ -228,11 +228,11 @@ void Bot::makeMoves()
         int dir = rotate[angle][move.dir];
         Location new_loc = state.getLocation(move.loc, dir);
         const Square &square = state.grid(new_loc);
-        if (!busy(new_loc) && !square.isWater && !square.hillPlayer == 0) {
+        if (move.close < 0 || !busy(new_loc) && !square.isWater && !square.hillPlayer == 0) {
             state.bug << "move " << move.loc << ": " << CDIRECTIONS[dir] << " [" << *move.why << "]" << endl;
             state.makeMove(move.loc, dir);
-            busy(move.loc) = false;
-            busy(new_loc) = true;
+            busy(move.loc)--;
+            busy(new_loc)++;
             moved = true;
         } else {
             retry.push(move);
