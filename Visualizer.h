@@ -2,6 +2,7 @@
 #define _VISUALIZER_H
 
 #include <iostream>
+#include <string>
 
 #include "Location.h"
 
@@ -72,6 +73,12 @@ public:
     {
 #ifdef VISUALIZER
         std::cout << "v tileSubTile " << a.row << " " << a.col << " " << subtile << std::endl;
+#endif
+    }
+    void info(const Location &a, const std::string &info) const
+    {
+#ifdef VISUALIZER
+        std::cout << "i " << a.row << " " << a.col << " " << info << std::endl;
 #endif
     }
 };

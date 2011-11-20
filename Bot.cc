@@ -233,6 +233,9 @@ void Bot::makeMoves()
             state.makeMove(move.loc, dir);
             busy(move.loc)--;
             busy(new_loc)++;
+            state.v.info(move.loc, *move.why);
+            if (angle != 0)
+                state.v.info(new_loc, "angle" + angle);
             moved = true;
         } else {
             retry.push(move);
