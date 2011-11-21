@@ -127,7 +127,7 @@ Move Bot::pickMove(const Location &loc) const
     pick.push(makeMove(loc, e_explore));
     pick.push(makeMove(loc, e_revisit, 20, 0, 2, 1));
     pick.push(makeMove(loc, e_attack, 0, 20, 2, 3));
-    pick.push(makeMove(loc, e_defend, 0, 8, 2, 1));
+    pick.push(makeMove(loc, e_defend, 0, 8, 4, 1));
     return pick.top();
 }
 
