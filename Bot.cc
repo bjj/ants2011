@@ -166,9 +166,10 @@ void Bot::makeMoves()
     e_attack.update(victims.begin(), victims.end());
 
     busy.reset();
-    for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
+    for(int ant=0; ant<(int)state.myAnts.size(); ant++)
         busy(state.myAnts[ant]) = 1;
-    }
+    for (uint i = 0; i < state.food.size(); ++i)
+        busy(state.food[i]) = 1;
 
     Move::close_queue moves;
     set<Location> sessile;
@@ -233,8 +234,9 @@ void Bot::makeMoves()
         Location new_loc = state.getLocation(move.loc, dir);
         const Square &square = state.grid(new_loc);
         if (move.close < 0 || !busy(new_loc) && !square.isWater && !square.hillPlayer == 0) {
-            state.bug << "move " << move.loc << ": " << CDIRECTIONS[dir] << " [" << *move.why << "]" << endl;
-            state.makeMove(move.loc, dir);
+            state.bug << "move " << move.loc << ": " << CDIRECTIONS[dir] << " [" << *move.why << "] a" << angle << endl;
+            if (dir != TDIRECTIONS)
+                state.makeMove(move.loc, dir);
             busy(move.loc)--;
             busy(new_loc)++;
             state.v.info(move.loc, *move.why);
