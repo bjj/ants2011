@@ -10,8 +10,21 @@ using namespace std;
 class Combat
 {
 public:
+    struct Enemy {
+        Enemy(const Location &l, int n) : loc(l), id(n), bonus(50), weakness(0), antWeakness(99) { }
+        Location loc;
+        int id;
+        int bonus;
+        int weakness, antWeakness;
+
+        inline int score() const
+        {
+            return bonus * (weakness > antWeakness);
+        }
+    };
+
     struct Ant {
-        Ant(const Location &l) : loc(l), dir(TDIRECTIONS) { }
+        Ant(const Location &l) : loc(l), dir(TDIRECTIONS), weakness(0), enemyWeakness(99) { }
         struct Move {
             Move() : occupied(0), bonus(0) { }
             bool *occupied;
@@ -21,13 +34,33 @@ public:
         Location loc;
         Move moves[TDIRECTIONS+1];
         int dir;
-    };
+        int weakness, enemyWeakness;
 
-    struct Enemy {
-        Enemy(const Location &l, int n) : loc(l), id(n), weakness(0) { }
-        Location loc;
-        int id;
-        int weakness;
+        inline int score() const
+        {
+            return moves[dir].bonus + -250 * (weakness >= enemyWeakness);
+        }
+
+        struct Weakness {
+            Weakness(Ant &a) :ant(a), lastEnemyId(-1), weakness(0), enemyWeakness(99) { }
+            Ant &ant;
+            int lastEnemyId;
+            int weakness, enemyWeakness;
+
+            inline void attack(const Enemy &enemy)
+            {
+                if (lastEnemyId != enemy.id) {
+                    lastEnemyId = enemy.id;
+                    weakness++;
+                }
+                enemyWeakness = min(enemyWeakness, enemy.weakness);
+            }
+            inline void apply()
+            {
+                ant.weakness = weakness;
+                ant.enemyWeakness = enemyWeakness;
+            }
+        };
     };
 
     Combat(State &s, vector<Ant> &a, vector<Enemy> &e)
@@ -37,12 +70,14 @@ public:
         , attack_score(0)
         , defend_score(0)
     {
-        for (uint i = 0; i < ants.size(); ++i) {
+        for (uint i = 0; i < ants.size(); ++i)
             apply(i);
-            defend_score += score(ants[i]);
+        for (uint i = 0; i < ants.size(); ++i) {
+            apply2(i);
+            defend_score += ants[i].score();
         }
         for (uint i = 0; i < enemies.size(); ++i) {
-            attack_score += score(enemies[i]);
+            attack_score += enemies[i].score();
         }
     }
 
@@ -104,21 +139,6 @@ private:
 
     Combat() : state(*((State *)0)) { }
 
-    int score(const Enemy &enemy) const
-    {
-        if (enemy.weakness == 0)
-            return 0;
-        else if (enemy.weakness >= 2)
-            return 10 + (enemy.weakness - 2) * 4;
-        else
-            return -10;
-    }
-
-    int score(const Ant &ant) const
-    {
-        return ant.moves[ant.dir].bonus;
-    }
-
     void apply(int n)
     {
         Combat::Ant &ant = ants[n];
@@ -128,6 +148,18 @@ private:
             if (move.overlap[i])
                 enemies[i].weakness += 1;
         }
+    }
+
+    void apply2(int n)
+    {
+        Combat::Ant &ant = ants[n];
+        Combat::Ant::Move &move = ant.moves[ant.dir];
+        Combat::Ant::Weakness vs(ant);
+        for (uint i = 0; i < enemies.size(); ++i) {
+            if (move.overlap[i])
+                vs.attack(enemies[i]);
+        }
+        vs.apply();
     }
 
     bool change(int n, int dir)
@@ -141,19 +173,48 @@ private:
             return false;
         *old.occupied = false;
         *move.occupied = true;
-        defend_score -= score(ant);
+        defend_score -= ant.score();
         ant.dir = dir;
-        defend_score += score(ant);
+
+        Combat::Ant::Weakness vs(ant);
         for (uint i = 0; i < enemies.size(); ++i) {
             if (move.overlap[i] != old.overlap[i]) {
-                int oldscore = score(enemies[i]);
+                attack_score -= enemies[i].score();
                 if (old.overlap[i])
                     enemies[i].weakness -= 1;
                 else
                     enemies[i].weakness += 1;
-                attack_score += score(enemies[i]) - oldscore;
+            }
+            if (move.overlap[i])
+                vs.attack(enemies[i]);
+        }
+        vs.apply();
+
+        for (uint i = 0; i < enemies.size(); ++i) {
+            if (move.overlap[i] != old.overlap[i]) {
+                int antWeakness = 99;
+                for (uint j = 0; j < ants.size(); ++j) {
+                    Combat::Ant &ant2 = ants[j];
+                    Combat::Ant::Move &move2 = ant2.moves[ant2.dir];
+                    if (!move2.overlap[i])
+                        continue;
+                    antWeakness = min(ant2.weakness, antWeakness);
+
+                    defend_score -= ant2.score();
+                    Combat::Ant::Weakness vs2(ant2);
+                    for (uint k = 0; k < enemies.size(); ++k) {
+                        if (!move2.overlap[k])
+                            continue;
+                        vs2.attack(enemies[k]);
+                    }
+                    vs2.apply();
+                    defend_score += ant2.score();
+                }
+                enemies[i].antWeakness = antWeakness;
+                attack_score += enemies[i].score();
             }
         }
+        defend_score += ant.score();
         return true;
     }
 
@@ -179,7 +240,7 @@ ostream & operator << (ostream &os, const Combat &combat)
 
     os << endl << " ants:" << endl;
     for (vector<Combat::Ant>::const_iterator it = combat.ants.begin(); it != combat.ants.end(); ++it) {
-        os << "  " << (*it).loc << " " << CDIRECTIONS[(*it).dir] << " b(" << (*it).moves[(*it).dir].bonus << ")" << endl;
+        os << "  " << (*it).loc << " " << CDIRECTIONS[(*it).dir] << " w(" << (*it).weakness << ":" << (*it).enemyWeakness <<") b(" << (*it).moves[(*it).dir].bonus << ")" << " s(" << (*it).score() << ")" << endl;
     }
     os << endl;
 
@@ -201,7 +262,8 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     combatOccupied.reset();
     for (int r = 0; r < state.rows; ++r) {
         for (int c = 0; c < state.cols; ++c) {
-            if (state.grid[r][c].isWater)
+            const Square &square = state.grid[r][c];
+            if (square.isWater || square.isFood)
                 combatOccupied(r, c) = true;
         }
     }
@@ -210,12 +272,18 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     // relevant to our ants could move in the next turn.
     vector<Combat::Enemy> enemies;
     for (State::iterator it = state.enemyAnts.begin(); it != state.enemyAnts.end(); ++it) {
-        if (e_self.euclidean(*it, limit) <= close) {
+        //if (e_self.euclidean(*it, limit) <= close) {
+        if (ep_self(*it) <= limit) {  // XXX
             int id = it - state.enemyAnts.begin();
             for (int d = 0; d < TDIRECTIONS + 1; ++d) {
                 const Location dest = state.getLocation(*it, d);
-                if (!combatOccupied(dest))
+                if (!combatOccupied(dest)) {
                     enemies.push_back(Combat::Enemy(dest, id));
+                    if (e_myHills(dest) < 3)
+                        enemies.back().bonus *= 8;
+                    else if (e_myHills(dest) < 10)
+                        enemies.back().bonus *= 2;
+                }
             }
         }
     }
@@ -225,7 +293,8 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     // turn for each possible move.
     vector<Combat::Ant> ants;
     for (State::iterator it = state.myAnts.begin(); it != state.myAnts.end(); ++it) {
-        if (e_enemies.euclidean(*it, limit) <= close) {
+        // if (e_enemies.euclidean(*it, limit) <= close) {
+        if (ep_enemies(*it) <= limit) {  // XXX
             ants.push_back(Combat::Ant(*it));
             Combat::Ant &ant = ants.back();
             for (int d = 0; d < TDIRECTIONS + 1; ++d) {
@@ -233,19 +302,17 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                 ant.moves[d].occupied = &combatOccupied(dest);
                 if (*ant.moves[d].occupied)
                     continue;
-                int threatened = 0;
                 for (uint j = 0; j < enemies.size(); ++j) {
                     bool overlaps = state.distance(enemies[j].loc, dest) <=
                                                    state.attackradius;
                     ant.moves[d].overlap.push_back(overlaps);
-                    if (overlaps)
-                        threatened++;
                 }
-                ant.moves[d].bonus = -threatened * (10 / 5);
                 if (state.grid[dest.row][dest.col].hillPlayer > 0)
-                    ant.moves[d].bonus += 50;
+                    ant.moves[d].bonus += state.grid[dest.row][dest.col].ant == -1 ? 400 : 50;
+                if (e_attack(dest) < 3)
+                    ant.moves[d].bonus += 100;
                 if (e_attack(dest) < e_attack(*it))
-                    ant.moves[d].bonus += 2;
+                    ant.moves[d].bonus += 20;
                 if (e_food(dest) < 5 && e_food(dest) < e_food(*it))
                     ant.moves[d].bonus += 3;
             }
@@ -262,7 +329,7 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     for (uint i = 0; i < best.ants.size(); ++i) {
         static const string why("combat");
         sessile.insert(best.ants[i].loc);
-        moves.push(Move(best.ants[i].loc, best.ants[i].dir, 1, 1, why));
+        moves.push(Move(best.ants[i].loc, best.ants[i].dir, 1, -100, why));
     }
 
 #ifdef TEST_COMBAT_IMPROVE
