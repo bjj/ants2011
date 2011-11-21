@@ -205,6 +205,7 @@ void Bot::makeMoves()
             }
         }
     }
+    copy(state.enemyAnts.begin(), state.enemyAnts.end(), back_inserter(defense));
     e_defend.update(defense.begin(), defense.end());
 
     for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
