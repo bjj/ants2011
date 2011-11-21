@@ -29,7 +29,7 @@ protected:
     };
 
 public:
-    Edt(std::string _name, State &_state, bool block = true);
+    Edt(std::string _name, State &_state, bool block = true, bool pass = false);
     template <typename I>
     void update(I begin, I end)
     {
@@ -71,7 +71,7 @@ protected:
 public:
     std::string name;
 protected:
-    bool myHillsBlock;
+    bool myHillsBlock, allPass;
     bool empty_;
     std::vector<Location> origins;
 };
