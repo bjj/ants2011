@@ -33,7 +33,7 @@ public:
                 else
                     e = enew;
             }
-            temp *= 0.96;
+            temp *= 0.958;
         }
         return best;
     }

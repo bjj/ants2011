@@ -283,6 +283,8 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                         enemies.back().bonus *= 8;
                     else if (e_myHills(dest) < 10)
                         enemies.back().bonus *= 2;
+                    if (e_attack(dest) < 5)
+                        enemies.back().bonus *= 2;
                 }
             }
         }
@@ -314,8 +316,9 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                 if (e_attack(dest) < e_attack(*it))
                     ant.moves[d].bonus += 20;
                 if (e_food(dest) < 5 && e_food(dest) < e_food(*it))
-                    ant.moves[d].bonus += 3;
+                    ant.moves[d].bonus += 10;
             }
+            ant.moves[TDIRECTIONS].bonus += 5;
         }
     }
 
