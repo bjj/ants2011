@@ -21,7 +21,6 @@ public:
         : rows(other.rows), cols(other.cols), data(0)
     {
         data = new T[rows * cols];
-        int end = rows * cols;
         std::copy(other.data, other.data + rows * cols, data);
     }
     ~Grid() { delete data; }
@@ -41,6 +40,7 @@ public:
             rows = r;
             cols = c;
             data = new T[rows * cols];
+            reset();
         }
     }
 
@@ -75,13 +75,14 @@ public:
     }
     Grid & operator = (const Grid &rhs)
     {
-        rows = rhs.rows;
-        cols = rhs.cols;
-        delete data;
-        data = new T[rows * cols];
-        int end = rows * cols;
-        for (int i = 0; i < end; ++i)
-            data[i] =rhs.data[i];
+        if (data == 0 || rows != rhs.rows || cols != rhs.cols) {
+            rows = rhs.rows;
+            cols = rhs.cols;
+            delete data;
+            data = new T[rows * cols];
+        }
+        copy(rhs.data, rhs.data + rows * cols, data);
+        return *this;
     }
 
 protected:
