@@ -74,6 +74,7 @@ struct Bot
     void visualize();
 
     void combat(Move::close_queue &moves, std::set<Location> &sessile);
+    void territory(Move::close_queue &moves, std::set<Location> &sessile);
     void eat(Move::close_queue &moves, std::set<Location> &sessile);
 
 };

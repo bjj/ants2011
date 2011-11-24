@@ -125,7 +125,7 @@ Move Bot::pickMove(const Location &loc) const
     Move::score_queue pick;
     //pick.push(makeMove(loc, e_food, 0, 8, 5, 2));
     pick.push(makeMove(loc, e_explore));
-    pick.push(makeMove(loc, e_revisit, 20, 0, 2, 1));
+    //pick.push(makeMove(loc, e_revisit, 5));
     pick.push(makeMove(loc, e_attack, 0, 20, 2, 3));
     pick.push(makeMove(loc, e_defend, 0, 8, 4, 1));
     return pick.top();
@@ -176,6 +176,7 @@ void Bot::makeMoves()
 
     combat(moves, sessile);
     eat(moves, sessile);
+    territory(moves, sessile);
 
     vector<Location> defense;
     int defenders = 0;
@@ -290,7 +291,7 @@ void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
                 break;
             } else if (square.ant == 0 && !sessile.count(*bfs)) {
                 static const string why("food+");
-                moves.push(Move(*bfs, bfs.direction(), 1, 1, why));
+                moves.push(Move(*bfs, bfs.direction(), 1, -99, why));
                 sessile.insert(*bfs);
                 ontheway.insert(state.getLocation(*bfs, bfs.direction()));
                 state.v.arrow(loc, *bfs);
