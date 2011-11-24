@@ -24,7 +24,7 @@ public:
     };
 
     struct Ant {
-        Ant(const Location &l) : loc(l), dir(TDIRECTIONS), weakness(0), enemyWeakness(99) { }
+        Ant(const Location &l) : loc(l), dir(TDIRECTIONS), weakness(0), enemyWeakness(99), cost(250) { }
         struct Move {
             Move() : occupied(0), bonus(0) { }
             bool *occupied;
@@ -35,10 +35,11 @@ public:
         Move moves[TDIRECTIONS+1];
         int dir;
         int weakness, enemyWeakness;
+        int cost;
 
         inline int score() const
         {
-            return moves[dir].bonus + -250 * (weakness >= enemyWeakness);
+            return moves[dir].bonus + -cost * (weakness >= enemyWeakness);
         }
 
         struct Weakness {
@@ -275,7 +276,10 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
         //if (e_self.euclidean(*it, limit) <= close) {
         if (ep_self(*it) <= limit) {  // XXX
             int id = it - state.enemyAnts.begin();
-            for (int d = 0; d < TDIRECTIONS + 1; ++d) {
+            bool still = state.grid(*it).stationary > 4;
+            if (still)
+                state.bug << "stationary: " << *it << endl;
+            for (int d = still ? TDIRECTIONS : 0; d < TDIRECTIONS + 1; ++d) {
                 const Location dest = state.getLocation(*it, d);
                 if (!combatOccupied(dest)) {
                     enemies.push_back(Combat::Enemy(dest, id));
@@ -317,8 +321,12 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                     ant.moves[d].bonus += 20;
                 if (e_food(dest) < 5 && e_food(dest) < e_food(*it))
                     ant.moves[d].bonus += 10;
+                if (e_attack(dest) < 5 && e_attack(dest) < e_attack(*it))
+                    ant.moves[d].bonus += 10;
             }
             ant.moves[TDIRECTIONS].bonus += 5;
+            if (e_myHills(ant.loc) > 10 && e_myHills(ant.loc) < 50)
+                ant.cost -= 75;
         }
     }
 
