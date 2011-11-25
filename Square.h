@@ -9,6 +9,7 @@
 struct Square
 {
     bool isVisible, wasVisible, isWater, isHill, isFood;
+    char byWater;
     int prevAnt, ant, hillPlayer;
     int lastSeenTurn;
     int timesVisible;
@@ -17,7 +18,8 @@ struct Square
 
     Square()
     {
-        isVisible = wasVisible = isWater = isHill = isFood = 0;
+        isVisible = wasVisible = isWater = isHill = isFood = false;
+        byWater = 0;
         prevAnt = ant = hillPlayer = -1;
         lastSeenTurn = -1000000;
         stationary = 0;

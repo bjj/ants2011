@@ -235,6 +235,8 @@ istream& operator>>(istream &is, State &state)
             {
                 is >> row >> col;
                 state.grid[row][col].isWater = 1;
+                for (int d = 0; d < TDIRECTIONS; ++d)
+                    state.grid(state.getLocation(Location(row,col), d)).byWater++;
             }
             else if(inputType == "f") //food square
             {
