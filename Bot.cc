@@ -182,10 +182,6 @@ void Bot::makeMoves()
     Move::close_queue moves;
     set<Location> sessile;
 
-    combat(moves, sessile);
-    eat(moves, sessile);
-    territory(moves, sessile);
-
     vector<Location> defense;
     int defenders = 0;
     if (state.turn < state.avgHillSpacing) {
@@ -216,6 +212,10 @@ void Bot::makeMoves()
     }
     copy(state.enemyAnts.begin(), state.enemyAnts.end(), back_inserter(defense));
     e_defend.update(defense.begin(), defense.end());
+
+    combat(moves, sessile);
+    eat(moves, sessile);
+    territory(moves, sessile);
 
     for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
         const Location & loc = state.myAnts[ant];
