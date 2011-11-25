@@ -67,9 +67,8 @@ void Bot::playGame()
  * care because we're not there!
  */
 template <typename Predicate>
-vector<Location> Bot::frontier()
+vector<Location> Bot::frontier(const Predicate &pred)
 {
-    Predicate pred;
     vector<Location> frontier;
 
     for (int r = 0; r < state.rows; ++r) {
@@ -136,9 +135,9 @@ void Bot::makeMoves()
 {
     state.bug << "turn " << state.turn << ":" << endl;
 
-    vector<Location> frontier = this->frontier<Visited>();
+    vector<Location> frontier = this->frontier(Visited());
     e_explore.update(frontier.begin(), frontier.end());
-    frontier = this->frontier<Visible>();
+    frontier = this->frontier(Visible());
     e_revisit.update(frontier.begin(), frontier.end());
 
     state.bug << state << endl;
