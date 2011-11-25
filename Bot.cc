@@ -104,6 +104,15 @@ struct Visible {
     }
 };
 
+struct SeenRecently {
+    SeenRecently(int when) : seenTurn(when) { }
+    bool operator () (const Square &square) const
+    {
+        return square.lastSeenTurn > seenTurn;
+    }
+    int seenTurn;
+};
+
 static inline int costInflect(int c, int breakpoint, int mul, int div)
 {
     return c <= breakpoint ? c : (c * mul / div);
