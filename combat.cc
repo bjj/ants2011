@@ -319,7 +319,7 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                     ant.moves[d].bonus += 100;
                 if (e_attack(dest) < e_attack(*it))
                     ant.moves[d].bonus += 20;
-                if (e_food(dest) < 5 && e_food(dest) < e_food(*it))
+                if (e_food(dest) < 20 && e_food(dest) < e_food(*it))
                     ant.moves[d].bonus += 10;
                 if (e_attack(dest) < 5 && e_attack(dest) < e_attack(*it))
                     ant.moves[d].bonus += 10;
