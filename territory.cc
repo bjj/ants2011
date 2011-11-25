@@ -11,7 +11,7 @@ using namespace std;
 class Territory
 {
 public:
-    static const int RANGE = 3;
+    static const int RANGE = 4;
 
     struct Ant {
         Ant(const Location &l) : loc(l), dir(TDIRECTIONS), cost(250) { }
@@ -213,12 +213,20 @@ void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
         ants.push_back(Territory::Ant(*it));
         Territory::Ant &ant = ants.back();
 
+        int bonusMul = 1 + 4 * (e_enemies(*it) < 5 || e_explore(*it) < 15);
         for (int d = 0; d < TDIRECTIONS + 1; ++d) {
             const Location dest = state.getLocation(*it, d);
             ant.moves[d].occupied = &combatOccupied(dest);
-            //ant.moves[d].bonus += 8 * (e_explore(dest) < e_explore(*it));
-            // XXX
+            int bonus = 0;
+            if (state.grid(dest).hillPlayer == 0)
+                bonus = -100;
+            bonus += 17 * (e_explore(dest) < e_explore(*it));
+            bonus += 23 * (e_attack(dest) < e_attack(*it));
+            if (e_defend(dest) <= Territory::RANGE * 2)
+                bonus += 10 * (e_defend(dest) < e_defend(*it));
+            ant.moves[d].bonus = bonus * bonusMul * Territory::RANGE / 10;
         }
+
         GridBfs<Passable> bfs(state.grid, passable, *it);
         for(++bfs; bfs != end && bfs.distance() <= Territory::RANGE+1; ++bfs) {
             if (bfs.distance() < Territory::RANGE)
@@ -258,10 +266,8 @@ void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
                 break;
             }
         }
-        if (found < 4)
-            ants.pop_back();
     }
-#if 1
+#if 0
 #ifdef VISUALIZER
     for (uint i = 0; i < ants.size(); ++i) {
         //int d = state.turn % TDIRECTIONS;
