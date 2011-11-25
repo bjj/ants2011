@@ -327,6 +327,8 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
             ant.moves[TDIRECTIONS].bonus += 5;
             if (e_myHills(ant.loc) > 10 && e_myHills(ant.loc) < 50)
                 ant.cost -= 75;
+        } else {
+            combatOccupied(*it) = true;
         }
     }
 
