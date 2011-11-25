@@ -300,7 +300,8 @@ void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
                 break;
             } else if (square.ant == 0 && !sessile.count(*bfs)) {
                 static const string why("food+");
-                moves.push(Move(*bfs, bfs.direction(), 1, -99, why));
+                if (bfs.distance() != 1)
+                    moves.push(Move(*bfs, bfs.direction(), 1, 1, why));
                 sessile.insert(*bfs);
                 ontheway.insert(state.getLocation(*bfs, bfs.direction()));
                 state.v.arrow(loc, *bfs);
