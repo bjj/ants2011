@@ -283,8 +283,8 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                 const Location dest = state.getLocation(*it, d);
                 if (!combatOccupied(dest)) {
                     enemies.push_back(Combat::Enemy(dest, id));
-                    if (e_myHills(dest) < 3)
-                        enemies.back().bonus *= 8;
+                    if (e_myHills(dest) < 4)
+                        enemies.back().bonus *= 10;
                     else if (e_myHills(dest) < 10)
                         enemies.back().bonus *= 2;
                     if (e_attack(dest) < 5)
