@@ -341,9 +341,12 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     Combat best = anneal(combat);
     state.bug << best;
 
+    for (uint i = 0; i < ants.size(); ++i)
+        combatOccupied(ants[i].loc) = false;
     for (uint i = 0; i < best.ants.size(); ++i) {
         static const string why("combat");
         sessile.insert(best.ants[i].loc);
+        combatOccupied(state.getLocation(best.ants[i].loc, best.ants[i].dir)) = true;
         moves.push(Move(best.ants[i].loc, best.ants[i].dir, 1, -100, why));
     }
 
