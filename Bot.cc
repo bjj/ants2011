@@ -276,7 +276,8 @@ void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
 
     state.v.setLineColor(0,0,200);
 
-    float explore = state.myAnts.size() > 4 ? 0.25 : 0.0;
+    // even at the beginning moving out of your bunker is good
+    float explore = 0.25; // state.myAnts.size() > 4 ? 0.25 : 0.0;
     priority_queue<pair<float, Location> > food;
     for (set<Location>::iterator it = state.allFood.begin(); it != state.allFood.end(); ++it) {
         float score = 0;
