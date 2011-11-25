@@ -187,18 +187,17 @@ void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
 {
 
 #if 0
-    // Reset a grid of locations for the search to use to determine what
-    // locations are occupied.  Initialize it with true for impassible (or
-    // undesirable) locations:
-    territoryOccupied.reset();
+#ifdef VISUALIZER
     for (int r = 0; r < state.rows; ++r) {
         for (int c = 0; c < state.cols; ++c) {
-            const Square &square = state.grid[r][c];
-            if (square.isWater || square.isFood)
-                territoryOccupied(r, c) = true;
+            if (combatOccupied(r, c)) {
+                state.v.tileBorder(Location(r, c), "MM");
+            }
         }
     }
 #endif
+#endif
+
     Grid<int> tgrid;
     tgrid.init(state);
     tgrid.reset();
