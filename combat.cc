@@ -317,9 +317,9 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                     ant.moves[d].overlap.push_back(overlaps);
                 }
                 if (state.grid[dest.row][dest.col].hillPlayer > 0)
-                    ant.moves[d].bonus += state.grid[dest.row][dest.col].ant == -1 ? 400 : 50;
+                    ant.moves[d].bonus += state.grid[dest.row][dest.col].ant == -1 ? 100 : 50;
                 if (e_attack(dest) < 3)
-                    ant.moves[d].bonus += 100;
+                    ant.moves[d].bonus += 50;
                 if (e_attack(dest) < e_attack(*it))
                     ant.moves[d].bonus += 20;
                 if (e_food(dest) < 20 && e_food(dest) < e_food(*it))
