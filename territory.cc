@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <stdlib.h>
 
 #include "State.h"
@@ -206,6 +207,24 @@ void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
     Passable passable(state);
     GridBfs<Passable> end;
 
+    int attackBonusMul = 23;
+    int exploreBonusMul = 17;
+    int minExplore = maxVisibleSquares * 85 / 100;
+    int targetExplore = minExplore + (state.turn - maxVisibleTurn) * (state.viewradius * 2) * 4;
+    targetExplore = min(targetExplore, state.rows * state.cols * 95 / 100);
+    if (state.visibleSquares < minExplore)
+        exploreBonusMul = attackBonusMul + 5;
+    if (state.visibleSquares < targetExplore)
+        exploreBonusMul = attackBonusMul - 1;
+
+#if 0
+#ifdef VISUALIZER
+    stringstream exploreInfo;
+    exploreInfo << "vis " << state.visibleSquares << " min " << minExplore << " targ " << targetExplore;
+    state.v.info(Location(0,0), exploreInfo.str());
+#endif
+#endif
+
     for (State::iterator it = state.myAnts.begin(); it != state.myAnts.end(); ++it) {
         if (sessile.count(*it))
             continue;
@@ -220,8 +239,12 @@ void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
             int bonus = 0;
             if (state.grid(dest).hillPlayer == 0)
                 bonus = -100;
-            bonus += 17 * (e_explore(dest) < e_explore(*it));
-            bonus += 23 * (e_attack(dest) < e_attack(*it));
+            bonus += exploreBonusMul * (e_explore(dest) < e_explore(*it));
+            if (e_attack(dest) < e_attack(*it)) {
+                bonus += attackBonusMul;
+                if (e_attack(dest) < 12)
+                    bonus += attackBonusMul/2;
+            }
             if (e_defend(dest) <= Territory::RANGE * 2)
                 bonus += 10 * (e_defend(dest) < e_defend(*it));
             ant.moves[d].bonus = bonus * bonusMul * Territory::RANGE / 10;
@@ -290,7 +313,7 @@ void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
     Territory best = anneal(territory);
     state.bug << best;
 
-#if 1
+#if 0
 #ifdef VISUALIZER
     state.v.setFillColor(128, 0, 0, 0.5);
     for (int row = 0; row < state.rows; ++row)
