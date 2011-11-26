@@ -277,6 +277,7 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
         if (ep_self(*it) <= limit) {  // XXX
             int id = it - state.enemyAnts.begin();
             bool still = state.grid(*it).stationary > 4;
+            bool timedout = state.grid(*it).stationary > 20;
             if (still)
                 state.bug << "stationary: " << *it << endl;
             for (int d = still ? TDIRECTIONS : 0; d < TDIRECTIONS + 1; ++d) {
@@ -289,6 +290,8 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
                         enemies.back().bonus *= 2;
                     if (e_attack(dest) < 5)
                         enemies.back().bonus *= 2;
+                    if (timedout)
+                        enemies.back().bonus *= 4;
                 }
             }
         }
