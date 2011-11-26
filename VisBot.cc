@@ -19,5 +19,14 @@ void Bot::visualize()
     state.v.setLineColor(255, 255, 0);
     for (uint i = 0; i < unseen.size(); ++i)
         state.v.star(unseen[i], 0.7, 0.8, 4, false);
+
+#if 0
+    state.v.setLineColor(255,255,255,0.5);
+    for (int row = 0; row < state.rows; ++row)
+        for (int col = 0; col < state.cols; ++col)
+            if (state.grid[row][col].isVisible)
+                state.v.tileBorder(Location(row,col), "MM");
+#endif
+
 #endif
 }

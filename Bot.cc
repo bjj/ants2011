@@ -143,6 +143,7 @@ Move Bot::pickMove(const Location &loc) const
 void Bot::makeMoves()
 {
     state.bug << "turn " << state.turn << ":" << endl;
+    state.bug << "visible " << state.visibleSquares << " out of " << state.rows * state.cols << " or " << double(state.visibleSquares)/state.rows/state.cols << " max " << state.maxVisibleSquares << endl;
 
     vector<Location> frontier = this->frontier(Visited());
     e_explore.update(frontier.begin(), frontier.end());

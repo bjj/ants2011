@@ -15,19 +15,20 @@ State::State()
     stringstream ss;
     ss << "debug." << getpid() << ".txt";
     bug.open(ss.str());
-};
+}
 
 //deconstructor
 State::~State()
 {
     bug.close();
-};
+}
 
 //sets the state up
 void State::setup()
 {
+    visionNeighborhood = neighborhood_offsets(viewradius);
     grid.init(*this);
-};
+}
 
 //resets all non-water squares to land and clears the bots ant vector
 void State::reset()
@@ -39,9 +40,8 @@ void State::reset()
     food.clear();
     for(int row=0; row<rows; row++)
         for(int col=0; col<cols; col++)
-            if(!grid[row][col].isWater)
-                grid[row][col].reset();
-};
+            grid[row][col].reset();
+}
 
 //outputs move information to the engine
 void State::makeMove(const Location &loc, int direction)
@@ -51,7 +51,7 @@ void State::makeMove(const Location &loc, int direction)
     Location nLoc = getLocation(loc, direction);
     grid[nLoc.row][nLoc.col].ant = grid[loc.row][loc.col].ant;
     grid[loc.row][loc.col].ant = -1;
-};
+}
 
 //returns the euclidean distance between two locations with the edges wrapped
 double State::distance(const Location &loc1, const Location &loc2) const
@@ -61,7 +61,7 @@ double State::distance(const Location &loc1, const Location &loc2) const
         dr = min(d1, rows-d1),
         dc = min(d2, cols-d2);
     return sqrt(dr*dr + dc*dc);
-};
+}
 
 /*
     This function will update update the lastSeen value for any squares currently
@@ -77,33 +77,15 @@ void State::updateVisionInformation()
     std::queue<Location> locQueue;
     Location sLoc, cLoc, nLoc;
 
-    for(int a=0; a<(int) myAnts.size(); a++)
-    {
-        sLoc = myAnts[a];
-        locQueue.push(sLoc);
-
-        std::vector<std::vector<bool> > visited(rows, std::vector<bool>(cols, 0));
-        grid[sLoc.row][sLoc.col].setVisible(turn);
-        visited[sLoc.row][sLoc.col] = 1;
-
-        while(!locQueue.empty())
-        {
-            cLoc = locQueue.front();
-            locQueue.pop();
-
-            for(int d=0; d<TDIRECTIONS; d++)
-            {
-                nLoc = getLocation(cLoc, d);
-
-                if(!visited[nLoc.row][nLoc.col] && distance(sLoc, nLoc) <= viewradius)
-                {
-                    grid[nLoc.row][nLoc.col].setVisible(turn);
-                    locQueue.push(nLoc);
-                }
-                visited[nLoc.row][nLoc.col] = 1;
-            }
+    visibleSquares = 0;
+    for (iterator it = myAnts.begin(); it != myAnts.end(); ++it) {
+        for (iterator vt = visionNeighborhood.begin(); vt != visionNeighborhood.end(); ++vt) {
+            if (grid(deltaLocation(*it, (*vt).row, (*vt).col)).setVisible(turn))
+                ++visibleSquares;
         }
     }
+    maxVisibleSquares = max(visibleSquares, maxVisibleSquares);
+
     for (set<Location>::iterator it = allEnemyHills.begin(); it != allEnemyHills.end();) {
         const Square &square = grid[(*it).row][(*it).col];
         if (square.isVisible && !square.isHill)
@@ -158,7 +140,7 @@ ostream& operator<<(ostream &os, const State &state)
     }
 
     return os;
-};
+}
 
 //input function
 istream& operator>>(istream &is, State &state)
@@ -295,4 +277,21 @@ istream& operator>>(istream &is, State &state)
     }
 
     return is;
-};
+}
+
+// NB: not quite the same as ants.py.  Includes (0,0), does not
+// do offsetting of negative
+vector<Location>
+State::neighborhood_offsets(double max_dist) const
+{
+    vector<Location> neighborhood;
+    int d = max_dist + 1;
+
+    for (int dr = -d; dr <= d; ++dr) {
+        for (int dc = -d; dc <= d; ++dc) {
+            if (sqrt(dr*dr + dc*dc) <= max_dist)
+                neighborhood.push_back(Location(dr, dc));
+        }
+    }
+    return neighborhood;
+}

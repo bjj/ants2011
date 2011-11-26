@@ -52,6 +52,8 @@ struct State
     Grid<Square> grid;
     std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
     std::set<Location> allMyHills, allEnemyHills, allFood;
+    std::vector<Location> visionNeighborhood;
+    int visibleSquares, maxVisibleSquares;
     typedef std::vector<Location>::iterator iterator;
 
     Timer timer;
@@ -93,6 +95,8 @@ struct State
     }
 
     void updateVisionInformation();
+    std::vector<Location> neighborhood_offsets(double max_dist) const;
+
 };
 
 struct Passable

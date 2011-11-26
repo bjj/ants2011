@@ -28,6 +28,10 @@ struct Square
     //resets the information for the square except water information
     void reset()
     {
+        if (isWater) {
+            isVisible = false;
+            return;
+        }
         if (ant > 0 && prevAnt == ant)
             ++stationary;
         else
@@ -40,12 +44,16 @@ struct Square
         //deadAnts.clear();
     }
 
-    void setVisible(int turn)
+    bool setVisible(int turn)
     {
-        isVisible = 1;
-        wasVisible = 1;
-        ++timesVisible;
-        lastSeenTurn = turn;
+        if (!isVisible) {
+            isVisible = 1;
+            wasVisible = 1;
+            ++timesVisible;
+            lastSeenTurn = turn;
+            return true;
+        }
+        return false;
     }
 
     void putDeadAnt(int who)
