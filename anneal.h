@@ -8,12 +8,13 @@
 #include <math.h>
 #include <stdlib.h>
 
-template <typename Solution>
+template <typename Solution, int RateI = 958>
 class Anneal
 {
 public:
     Solution operator () (Solution &s)
     {
+        double Rate = RateI / 1000.0;
         int per_temp = s.iterations();
         double temp = 2000.0;
         Solution best(s);
@@ -33,7 +34,7 @@ public:
                 else
                     e = enew;
             }
-            temp *= 0.958;
+            temp *= Rate;
         }
         return best;
     }

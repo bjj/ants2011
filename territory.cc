@@ -309,7 +309,7 @@ void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
 
     Territory territory(state, ants, tgrid);
     state.bug << territory;
-    Anneal<Territory> anneal;
+    Anneal<Territory, 950> anneal;
     Territory best = anneal(territory);
     state.bug << best;
 
