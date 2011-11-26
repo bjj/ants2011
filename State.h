@@ -52,7 +52,7 @@ struct State
     Grid<Square> grid;
     std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
     std::set<Location> allMyHills, allEnemyHills, allFood;
-    std::vector<Location> visionNeighborhood;
+    std::vector<Location> visionNeighborhood, combatNeighborhood;
     int visibleSquares;
     typedef std::vector<Location>::iterator iterator;
 
@@ -96,6 +96,7 @@ struct State
 
     void updateVisionInformation();
     std::vector<Location> neighborhood_offsets(double max_dist) const;
+    std::vector<Location> dialate_neighborhood(const std::vector<Location> &orig, int n) const;
 
 };
 

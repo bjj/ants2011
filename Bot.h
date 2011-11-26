@@ -61,6 +61,7 @@ struct Bot
     Edt ep_self, ep_enemies;
     Grid<char> busy;
     Grid<bool> combatOccupied;
+    Grid<int> combatLabels;
     std::set<Location> interesting;
 
     Bot();
@@ -78,6 +79,9 @@ struct Bot
     void territory(Move::close_queue &moves, std::set<Location> &sessile);
     void eat(Move::close_queue &moves, std::set<Location> &sessile);
 
+    void combatLabel(std::vector<int> &equiv, int &nextLabel, const std::vector<Location> &ants);
+    std::vector<Location> combatThreat(const std::vector<Location> &ants, const std::vector<Location> &enemies, const std::vector<Location> &neighborhood);
+    void combatGroup(Move::close_queue &moves, std::set<Location> &sessile, const std::vector<Location> &, const std::vector<Location> &);
 };
 
 #endif //BOT_H_

@@ -24,6 +24,7 @@ Bot::Bot()
     , ep_enemies("enemies", state, false, true)
     , busy()
     , combatOccupied()
+    , combatLabels()
 {
 }
 
@@ -44,6 +45,7 @@ void Bot::playGame()
 
     busy.init(state);
     combatOccupied.init(state);
+    combatLabels.init(state);
 
     //continues making moves while the game is not over
     while(cin >> state)

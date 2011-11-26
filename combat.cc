@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "State.h"
 #include "Bot.h"
@@ -236,7 +237,7 @@ ostream & operator << (ostream &os, const Combat &combat)
 {
     os << "combat:" << endl << " score: " << -combat.e() << endl << " enemies:" << endl;
     for (vector<Combat::Enemy>::const_iterator it = combat.enemies.begin(); it != combat.enemies.end(); ++it) {
-        os << "  " << (*it).loc << " w(" << (*it).weakness << ")" << endl;
+        os << "  " << (*it).loc << " w(" << (*it).weakness << ") b(" << (*it).bonus << ")" << endl;
     }
 
     os << endl << " ants:" << endl;
@@ -248,15 +249,70 @@ ostream & operator << (ostream &os, const Combat &combat)
     return os;
 }
 
+// tiny union-find implementation
+static int ufFind(vector<int> &equiv, int a)
+{
+    if (equiv[a] == a)
+        return a;
+    else
+        return (equiv[a] = ufFind(equiv, equiv[a]));
+}
+
+// tiny union-find implementation
+static void ufUnion(vector<int> &equiv, int a, int b)
+{
+    a = ufFind(equiv, a);
+    b = ufFind(equiv, b);
+    if (a == b)
+        return;
+    if (a < b)
+        swap(a, b);
+    equiv[a] = b;
+}
+
+void Bot::combatLabel(vector<int> &equiv, int &nextLabel, const vector<Location> &ants)
+{
+    for (vector<Location>::const_iterator it = ants.begin(); it != ants.end(); ++it, ++nextLabel) {
+        equiv[nextLabel] = nextLabel; // initially an island
+        for (State::iterator ct = state.combatNeighborhood.begin(); ct != state.combatNeighborhood.end(); ++ct) {
+            int &label = combatLabels(state.deltaLocation(*it, (*ct).row, (*ct).col));
+            if (label != 0)
+                ufUnion(equiv, label, nextLabel); // join the party
+            else
+                label = nextLabel;
+        }
+    }
+}
+
 /**
- * Identify which ants are in position to be in combat and handle
- * them specially.
+ * Given two lists of ants find which ones threaten the other
+ */
+vector<Location>
+Bot::combatThreat(const vector<Location> &ants, const vector<Location> &enemies, const vector<Location> &neighborhood)
+{
+    Grid<bool> threat;
+    threat.init(state);
+
+    for (vector<Location>::const_iterator it = enemies.begin(); it != enemies.end(); ++it) {
+        for (vector<Location>::const_iterator ct = neighborhood.begin(); ct != neighborhood.end(); ++ct) {
+            const Location loc = state.deltaLocation(*it, (*ct).row, (*ct).col);
+            threat(loc) = true;
+        }
+    }
+    vector<Location> result;
+    result.reserve(ants.size());
+    for (vector<Location>::const_iterator it = ants.begin(); it != ants.end(); ++it) {
+        if (threat(*it))
+            result.push_back(*it);
+    }
+    return result;
+}
+
+/**
+ * Group ants into islands of isolated combat
  */
 void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
 {
-    double close = state.attackradius + 2.5;  // 2 moves
-    int limit = ceil(state.attackradius) + 3;     // looser manhattan limit
-
     // Reset a grid of locations for the search to use to determine what
     // locations are occupied.  Initialize it with true for impassible (or
     // undesirable) locations:
@@ -264,35 +320,83 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     for (int r = 0; r < state.rows; ++r) {
         for (int c = 0; c < state.cols; ++c) {
             const Square &square = state.grid[r][c];
-            if (square.isWater || square.isFood)
+            if (square.isWater || square.isFood || square.ant == 0)
                 combatOccupied(r, c) = true;
         }
     }
 
+    vector<Location> ants = combatThreat(state.myAnts, state.enemyAnts, state.combatNeighborhood); // state.attackNeighborhood);
+    vector<Location> enemies = combatThreat(state.enemyAnts, state.myAnts, state.combatNeighborhood);
+
+    combatLabels.reset();
+    vector<int> equiv(state.myAnts.size() + state.enemyAnts.size() + 1);
+    int nextLabel = 1;
+    combatLabel(equiv, nextLabel, ants);
+    combatLabel(equiv, nextLabel, enemies);
+
+    vector<pair<vector<Location>, vector<Location> > > groups(nextLabel);
+    for (State::iterator it = ants.begin(); it != ants.end(); ++it) {
+        state.bug << "ca: " << *it << " " << combatLabels(*it) << " u " << ufFind(equiv, combatLabels(*it)) << endl;
+        groups[ufFind(equiv, combatLabels(*it))].first.push_back(*it);
+    }
+    for (State::iterator it = enemies.begin(); it != enemies.end(); ++it)
+        groups[ufFind(equiv, combatLabels(*it))].second.push_back(*it);
+
+    static uint8_t colors[8][3] = {
+        { 0, 0, 0 },
+        { 128, 0, 0 },
+        { 0, 128, 0 },
+        { 128, 128, 0 },
+        { 0, 0, 128 },
+        { 128, 0, 128 },
+        { 0, 128, 128 },
+        { 128, 128, 128 },
+    };
+    for (int c = 0, i = 1; i < nextLabel; ++i) {
+        state.bug << "group " << i << " " << groups[i].first.size() << " / " << groups[i].second.size() << endl;
+        if (groups[i].first.empty())
+            continue;
+        state.v.setLineColor(colors[c][0], colors[c][1], colors[c][2],0.5);
+        c = (c + 1) % 8;
+        combatGroup(moves, sessile, groups[i].first, groups[i].second);
+    }
+}
+
+/**
+ * Identify which ants are in position to be in combat and handle
+ * them specially.
+ */
+void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const vector<Location> &ants_l, const vector<Location> &enemies_l)
+{
+#if 0
+#ifdef VISUALIZER
+    for (vector<Location>::const_iterator it = enemies_l.begin(); it != enemies_l.end(); ++it)
+        state.v.tileBorder(*it, "MM");
+    for (vector<Location>::const_iterator it = ants_l.begin(); it != ants_l.end(); ++it)
+        state.v.tileBorder(*it, "MM");
+#endif
+#endif
+
     // Construct *potential* enemies list:  All places where any enemies
     // relevant to our ants could move in the next turn.
     vector<Combat::Enemy> enemies;
-    for (State::iterator it = state.enemyAnts.begin(); it != state.enemyAnts.end(); ++it) {
-        //if (e_self.euclidean(*it, limit) <= close) {
-        if (ep_self(*it) <= limit) {  // XXX
-            int id = it - state.enemyAnts.begin();
-            bool still = state.grid(*it).stationary > 4;
-            bool timedout = state.grid(*it).stationary > 20;
-            if (still)
-                state.bug << "stationary: " << *it << endl;
-            for (int d = still ? TDIRECTIONS : 0; d < TDIRECTIONS + 1; ++d) {
-                const Location dest = state.getLocation(*it, d);
-                if (!combatOccupied(dest)) {
-                    enemies.push_back(Combat::Enemy(dest, id));
-                    if (e_myHills(dest) < 6)
-                        enemies.back().bonus *= 20;
-                    else if (e_myHills(dest) < 12)
-                        enemies.back().bonus *= 2;
-                    if (e_attack(dest) < 5)
-                        enemies.back().bonus *= 2;
-                    if (timedout)
-                        enemies.back().bonus *= 4;
-                }
+    for (vector<Location>::const_iterator it = enemies_l.begin(); it != enemies_l.end(); ++it) {
+        int id = it - enemies_l.begin();
+        bool still = state.grid(*it).stationary > 4;
+        bool timedout = state.grid(*it).stationary > 50;
+        for (int d = still ? TDIRECTIONS : 0; d < TDIRECTIONS + 1; ++d) {
+            const Location dest = state.getLocation(*it, d);
+            const Square &square = state.grid(dest);
+            if (!square.isWater && !square.isFood) {
+                enemies.push_back(Combat::Enemy(dest, id));
+                if (e_myHills(dest) < 6)
+                    enemies.back().bonus *= 20;
+                else if (e_myHills(dest) < 12)
+                    enemies.back().bonus *= 2;
+                if (e_attack(dest) < 5)
+                    enemies.back().bonus *= 2;
+                if (timedout)
+                    enemies.back().bonus *= 4;
             }
         }
     }
@@ -301,40 +405,44 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     // which of the above potential locations are reachable on the next
     // turn for each possible move.
     vector<Combat::Ant> ants;
-    for (State::iterator it = state.myAnts.begin(); it != state.myAnts.end(); ++it) {
-        // if (e_enemies.euclidean(*it, limit) <= close) {
-        if (ep_enemies(*it) <= limit) {  // XXX
-            ants.push_back(Combat::Ant(*it));
-            Combat::Ant &ant = ants.back();
-            for (int d = 0; d < TDIRECTIONS + 1; ++d) {
-                const Location dest = state.getLocation(*it, d);
-                ant.moves[d].occupied = &combatOccupied(dest);
-                if (*ant.moves[d].occupied)
-                    continue;
-                for (uint j = 0; j < enemies.size(); ++j) {
-                    bool overlaps = state.distance(enemies[j].loc, dest) <=
-                                                   state.attackradius;
-                    ant.moves[d].overlap.push_back(overlaps);
-                }
-                if (state.grid[dest.row][dest.col].hillPlayer > 0)
-                    ant.moves[d].bonus += state.grid[dest.row][dest.col].ant == -1 ? 100 : 50;
+    for (vector<Location>::const_iterator it = ants_l.begin(); it != ants_l.end(); ++it)
+        combatOccupied(*it) = false;
+    for (vector<Location>::const_iterator it = ants_l.begin(); it != ants_l.end(); ++it) {
+        ants.push_back(Combat::Ant(*it));
+        Combat::Ant &ant = ants.back();
+        for (int d = 0; d < TDIRECTIONS + 1; ++d) {
+            const Location dest = state.getLocation(*it, d);
+            ant.moves[d].occupied = &combatOccupied(dest);
+            if (*ant.moves[d].occupied)
+                continue;
+            for (uint j = 0; j < enemies.size(); ++j) {
+                bool overlaps = state.distance(enemies[j].loc, dest) <=
+                                               state.attackradius;
+                ant.moves[d].overlap.push_back(overlaps);
+            }
+
+            if (state.grid[dest.row][dest.col].hillPlayer > 0)
+                ant.moves[d].bonus += state.grid[dest.row][dest.col].ant == -1 ? 100 : 50;
+
+            if (e_attack(dest) < e_attack(*it)) {
                 if (e_attack(dest) < 3)
                     ant.moves[d].bonus += 50;
-                if (e_attack(dest) < e_attack(*it))
+                if (e_attack(dest) < 5)
+                    ant.moves[d].bonus += 30;
+                else
                     ant.moves[d].bonus += 20;
-                if (e_food(dest) < 20 && e_food(dest) < e_food(*it))
-                    ant.moves[d].bonus += 10;
-                if (e_attack(dest) < 5 && e_attack(dest) < e_attack(*it))
-                    ant.moves[d].bonus += 10;
             }
-            ant.moves[TDIRECTIONS].bonus += 5;
-            if (state.myAnts.size() > 150)
-                ant.cost -= 150;
-            else if (e_myHills(ant.loc) > 10 && e_myHills(ant.loc) < 50)
-                ant.cost -= 75;
-        } else {
-            combatOccupied(*it) = true;
+
+            if (e_food(dest) < 20 && e_food(dest) < e_food(*it))
+                ant.moves[d].bonus += 10;
         }
+        ant.moves[TDIRECTIONS].bonus += 5;  // try to avoid jittering around
+
+        // get more aggressive close to home
+        if (state.myAnts.size() > 150)
+            ant.cost -= 150;
+        else if (e_myHills(ant.loc) > 10 && e_myHills(ant.loc) < 50)
+            ant.cost -= 75;
     }
 
 

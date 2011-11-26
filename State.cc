@@ -27,6 +27,7 @@ State::~State()
 void State::setup()
 {
     visionNeighborhood = neighborhood_offsets(viewradius);
+    combatNeighborhood = dialate_neighborhood(neighborhood_offsets(attackradius), 2);
     grid.init(*this);
 }
 
@@ -293,4 +294,21 @@ State::neighborhood_offsets(double max_dist) const
         }
     }
     return neighborhood;
+}
+
+vector<Location>
+State::dialate_neighborhood(const vector<Location> &orig, int n) const
+{
+    set<Location> neighborhood(orig.begin(), orig.end());
+    while (n--) {
+        set<Location> dialated;
+        for (set<Location>::iterator it = neighborhood.begin(); it != neighborhood.end(); ++it) {
+            for (int d = 0; d < TDIRECTIONS + 1; ++d) {
+                dialated.insert(Location((*it).row + DIRECTIONS[d][0], 
+                                         (*it).col + DIRECTIONS[d][1]));
+            }
+        }
+        swap(dialated, neighborhood);
+    }
+    return vector<Location>(neighborhood.begin(), neighborhood.end());
 }
