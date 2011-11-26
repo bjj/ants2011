@@ -153,7 +153,7 @@ void Bot::makeMoves()
     state.bug << "visible " << state.visibleSquares << " out of " << state.rows * state.cols << " or " << double(state.visibleSquares)/state.rows/state.cols << " max " << maxVisibleSquares << endl;
 
     //vector<Location> frontier = this->frontier(Visited());
-    vector<Location> frontier = this->frontier(SeenRecently(state.turn - 25));
+    vector<Location> frontier = this->frontier(SeenRecently(state.turn - 19)); // min of food_turn
     e_explore.update(frontier.begin(), frontier.end());
     frontier = this->frontier(Visible());
     e_revisit.update(frontier.begin(), frontier.end());
