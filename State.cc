@@ -84,7 +84,6 @@ void State::updateVisionInformation()
                 ++visibleSquares;
         }
     }
-    maxVisibleSquares = max(visibleSquares, maxVisibleSquares);
 
     for (set<Location>::iterator it = allEnemyHills.begin(); it != allEnemyHills.end();) {
         const Square &square = grid[(*it).row][(*it).col];

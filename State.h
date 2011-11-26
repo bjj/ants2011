@@ -53,7 +53,7 @@ struct State
     std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
     std::set<Location> allMyHills, allEnemyHills, allFood;
     std::vector<Location> visionNeighborhood;
-    int visibleSquares, maxVisibleSquares;
+    int visibleSquares;
     typedef std::vector<Location>::iterator iterator;
 
     Timer timer;

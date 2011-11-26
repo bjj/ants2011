@@ -10,7 +10,9 @@ using namespace std;
 
 //constructor
 Bot::Bot()
-    : e_food("food", state)
+    : maxVisibleSquares(0)
+    , maxVisibleTurn(-1)
+    , e_food("food", state)
     , e_explore("explore", state)
     , e_revisit("revisit", state)
     , e_attack("attack", state)
@@ -143,7 +145,12 @@ Move Bot::pickMove(const Location &loc) const
 void Bot::makeMoves()
 {
     state.bug << "turn " << state.turn << ":" << endl;
-    state.bug << "visible " << state.visibleSquares << " out of " << state.rows * state.cols << " or " << double(state.visibleSquares)/state.rows/state.cols << " max " << state.maxVisibleSquares << endl;
+
+    if (state.visibleSquares > maxVisibleSquares) {
+        maxVisibleSquares = state.visibleSquares;
+        maxVisibleTurn = state.turn;
+    }
+    state.bug << "visible " << state.visibleSquares << " out of " << state.rows * state.cols << " or " << double(state.visibleSquares)/state.rows/state.cols << " max " << maxVisibleSquares << endl;
 
     vector<Location> frontier = this->frontier(Visited());
     e_explore.update(frontier.begin(), frontier.end());
