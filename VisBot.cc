@@ -24,7 +24,17 @@ void Bot::visualize()
     state.v.setLineColor(255,255,255,0.5);
     for (int row = 0; row < state.rows; ++row)
         for (int col = 0; col < state.cols; ++col)
-            if (state.grid[row][col].isVisible)
+            if (e_explore[row][col] == 1)
+                state.v.tileBorder(Location(row,col), "MM");
+    state.v.setLineColor(200,200,200,0.5);
+    for (int row = 0; row < state.rows; ++row)
+        for (int col = 0; col < state.cols; ++col)
+            if (e_explore[row][col] == 2)
+                state.v.tileBorder(Location(row,col), "MM");
+    state.v.setLineColor(150,150,150,0.5);
+    for (int row = 0; row < state.rows; ++row)
+        for (int col = 0; col < state.cols; ++col)
+            if (e_explore[row][col] == 3)
                 state.v.tileBorder(Location(row,col), "MM");
 #endif
 

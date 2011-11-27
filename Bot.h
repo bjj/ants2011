@@ -57,7 +57,9 @@ struct Bot
 {
     State state;
     int maxVisibleSquares, maxVisibleTurn;
-    Edt e_food, e_explore, e_revisit, e_attack, e_defend, e_enemies, e_self, e_myHills;
+    Edt e_food;
+    UniEdt e_explore;
+    Edt e_revisit, e_attack, e_defend, e_enemies, e_self, e_myHills;
     Edt ep_self, ep_enemies;
     Grid<char> busy;
     Grid<bool> combatOccupied;

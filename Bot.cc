@@ -13,7 +13,7 @@ Bot::Bot()
     : maxVisibleSquares(0)
     , maxVisibleTurn(-1)
     , e_food("food", state)
-    , e_explore("explore", state)
+    , e_explore("explore", state, e_myHills)
     , e_revisit("revisit", state)
     , e_attack("attack", state)
     , e_defend("defend", state)
@@ -154,11 +154,15 @@ void Bot::makeMoves()
     }
     state.bug << "visible " << state.visibleSquares << " out of " << state.rows * state.cols << " or " << double(state.visibleSquares)/state.rows/state.cols << " max " << maxVisibleSquares << endl;
 
+    e_myHills.update(state.allMyHills.begin(), state.allMyHills.end());
+
     //vector<Location> frontier = this->frontier(Visited());
     vector<Location> frontier = this->frontier(SeenRecently(state.turn - 19)); // min of food_turn
     e_explore.update(frontier.begin(), frontier.end());
+#if 0
     frontier = this->frontier(Visible());
     e_revisit.update(frontier.begin(), frontier.end());
+#endif
 
     state.bug << state << endl;
     //state.bug << e_explore << endl;
@@ -168,7 +172,6 @@ void Bot::makeMoves()
     ep_enemies.update(state.enemyAnts.begin(), state.enemyAnts.end());
     ep_self.update(state.myAnts.begin(), state.myAnts.end());
     e_food.update(state.allFood.begin(), state.allFood.end());
-    e_myHills.update(state.allMyHills.begin(), state.allMyHills.end());
 
     vector<Location> victims;
     if (state.myAnts.size() > 5) {

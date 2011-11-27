@@ -66,6 +66,7 @@ protected:
     friend std::ostream& operator<<(std::ostream &os, const Edt &edt);
 
     void enqueue(std::queue<QElem> & q, int why, int r, int c);
+    virtual void enqueueAll(std::queue<QElem> & q, int why, int r, int c);
 
     State &state;
 public:
@@ -74,6 +75,17 @@ protected:
     bool myHillsBlock, allPass;
     bool empty_;
     std::vector<Location> origins;
+};
+
+class UniEdt : public Edt
+{
+public:
+    UniEdt(std::string _name, State &_state, const Edt &mask);
+    void enqueue(std::queue<QElem> & q, int why, int maskDist, int r, int c);
+    void enqueueAll(std::queue<QElem> & q, int why, int r, int c);
+
+protected:
+    const Edt &mask;
 };
 
 #endif /* EDT_H_ */

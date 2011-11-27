@@ -24,6 +24,43 @@ Edt::enqueue(std::queue<QElem> & q, int why, int r, int c)
         q.push(QElem(r, c, why));
 }
 
+inline void
+Edt::enqueueAll(std::queue<QElem> & q, int why, int r, int c)
+{
+    enqueue(q, why, r+1, c);
+    enqueue(q, why, r, c+1);
+    enqueue(q, why, r-1, c);
+    enqueue(q, why, r, c-1);
+}
+
+UniEdt::UniEdt(std::string _name, State &_state, const Edt &_mask)
+    : Edt(_name, _state)
+    , mask(_mask)
+{
+    ;
+}
+
+inline void
+UniEdt::enqueue(std::queue<QElem> & q, int why, int maskDist, int r, int c)
+{
+    r = (r + state.rows) % state.rows;
+    c = (c + state.cols) % state.cols;
+    if (mask[r][c] > maskDist)
+        return;
+    if ((*this)(r, c) == 0)
+        q.push(QElem(r, c, why));
+}
+
+inline void
+UniEdt::enqueueAll(std::queue<QElem> & q, int why, int r, int c)
+{
+    int maskDist = mask[r][c];
+    enqueue(q, why, maskDist, r+1, c);
+    enqueue(q, why, maskDist, r, c+1);
+    enqueue(q, why, maskDist, r-1, c);
+    enqueue(q, why, maskDist, r, c-1);
+}
+
 void
 Edt::update(std::queue<QElem> &food)
 {
@@ -59,10 +96,7 @@ Edt::update(std::queue<QElem> &food)
         }
         if ((*this)(r, c) == 0) {
             (*this)(r, c) = d;
-            enqueue(food, why, r+1, c);
-            enqueue(food, why, r, c+1);
-            enqueue(food, why, r-1, c);
-            enqueue(food, why, r, c-1);
+            enqueueAll(food, why, r, c);
         }
     }
 
@@ -115,4 +149,3 @@ std::ostream& operator<<(std::ostream &os, const Edt &edt)
     os << std::dec;
     return os;
 }
-
