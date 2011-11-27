@@ -429,6 +429,9 @@ void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const ve
             if (e_enemies(dest) < e_enemies(*it))
                 ant.moves[d].bonus += 7;
 
+            if (e_explore(dest) < e_explore(*it))
+                ant.moves[d].bonus += 1;
+
             if (e_attack(dest) < e_attack(*it)) {
                 if (e_attack(dest) < 3)
                     ant.moves[d].bonus += 50;
