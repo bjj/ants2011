@@ -65,6 +65,7 @@ struct Bot
     Grid<bool> combatOccupied;
     Grid<int> combatLabels;
     std::set<Location> interesting;
+    std::vector<Location> hotspots;
 
     Bot();
 

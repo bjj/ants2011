@@ -196,6 +196,10 @@ void Bot::makeMoves()
     Move::close_queue moves;
     set<Location> sessile;
 
+    hotspots.clear();
+    combat(moves, sessile);
+    eat(moves, sessile);
+
     vector<Location> defense;
     int defenders = 0;
     if (state.turn < state.avgHillSpacing) {
@@ -224,11 +228,9 @@ void Bot::makeMoves()
             }
         }
     }
-    copy(state.enemyAnts.begin(), state.enemyAnts.end(), back_inserter(defense));
+    copy(hotspots.begin(), hotspots.end(), back_inserter(defense));
     e_defend.update(defense.begin(), defense.end());
 
-    combat(moves, sessile);
-    eat(moves, sessile);
     territory(moves, sessile);
 
     for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
