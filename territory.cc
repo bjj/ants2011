@@ -232,7 +232,7 @@ void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
         ants.push_back(Territory::Ant(*it));
         Territory::Ant &ant = ants.back();
 
-        int bonusMul = 1 + 4 * (e_enemies(*it) < 5 || e_explore(*it) < 15);
+        int bonusMul = 2 + 3 * (e_enemies(*it) < 5 || e_explore(*it) < 15);
         for (int d = 0; d < TDIRECTIONS + 1; ++d) {
             const Location dest = state.getLocation(*it, d);
             ant.moves[d].occupied = &combatOccupied(dest);
@@ -240,13 +240,13 @@ void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
             if (state.grid(dest).hillPlayer == 0)
                 bonus = -100;
             bonus += exploreBonusMul * (e_explore(dest) < e_explore(*it));
-            if (e_attack(dest) < e_attack(*it)) {
+            if (e_attack(dest) < e_attack(*it) && e_myHills(*it) > min(16, e_attack(*it))) {
                 bonus += attackBonusMul;
                 if (e_attack(dest) < 12)
                     bonus += attackBonusMul/2;
             }
-            if (e_defend(dest) <= Territory::RANGE * 2)
-                bonus += 10 * (e_defend(dest) < e_defend(*it));
+            if (e_defend(dest) <= Territory::RANGE * 2 + 1)
+                bonus += 15 * (e_defend(dest) < e_defend(*it));
             ant.moves[d].bonus = bonus * bonusMul * Territory::RANGE / 10;
         }
 
