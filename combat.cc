@@ -441,9 +441,9 @@ void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const ve
 
         // get more aggressive close to home
         if (state.myAnts.size() > 150)
-            ant.cost -= 150;
-        else if (e_myHills(ant.loc) > 10 && e_myHills(ant.loc) < 50)
             ant.cost -= 75;
+        else if (e_myHills(ant.loc) > 10 && e_myHills(ant.loc) < 50)
+            ant.cost -= 50;
     }
 
 
