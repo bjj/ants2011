@@ -30,7 +30,7 @@ public:
             Move() : occupied(0), bonus(0) { }
             bool *occupied;
             int bonus;
-            vector<bool> overlap;
+            vector<char> overlap;
         };
         Location loc;
         Move moves[TDIRECTIONS+1];
