@@ -237,7 +237,7 @@ ostream & operator << (ostream &os, const Combat &combat)
 {
     os << "combat:" << endl << " score: " << -combat.e() << endl << " enemies:" << endl;
     for (vector<Combat::Enemy>::const_iterator it = combat.enemies.begin(); it != combat.enemies.end(); ++it) {
-        os << "  " << (*it).loc << " w(" << (*it).weakness << ") b(" << (*it).bonus << ")" << endl;
+        os << "  " << (*it).loc << " w(" << (*it).weakness << ":" << (*it).antWeakness << ") b(" << (*it).bonus << ")" << endl;
     }
 
     os << endl << " ants:" << endl;
@@ -335,10 +335,8 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     combatLabel(equiv, nextLabel, enemies);
 
     vector<pair<vector<Location>, vector<Location> > > groups(nextLabel);
-    for (State::iterator it = ants.begin(); it != ants.end(); ++it) {
-        state.bug << "ca: " << *it << " " << combatLabels(*it) << " u " << ufFind(equiv, combatLabels(*it)) << endl;
+    for (State::iterator it = ants.begin(); it != ants.end(); ++it)
         groups[ufFind(equiv, combatLabels(*it))].first.push_back(*it);
-    }
     for (State::iterator it = enemies.begin(); it != enemies.end(); ++it)
         groups[ufFind(equiv, combatLabels(*it))].second.push_back(*it);
 
