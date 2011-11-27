@@ -377,12 +377,14 @@ void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const ve
 #endif
 #endif
 
+    int stillThresh = 4 + random() % 3;
+
     // Construct *potential* enemies list:  All places where any enemies
     // relevant to our ants could move in the next turn.
     vector<Combat::Enemy> enemies;
     for (vector<Location>::const_iterator it = enemies_l.begin(); it != enemies_l.end(); ++it) {
         int id = it - enemies_l.begin();
-        bool still = state.grid(*it).stationary > 4;
+        bool still = state.grid(*it).stationary > stillThresh;
         bool timedout = state.grid(*it).stationary > 50;
         for (int d = still ? TDIRECTIONS : 0; d < TDIRECTIONS + 1; ++d) {
             const Location dest = state.getLocation(*it, d);
