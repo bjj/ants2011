@@ -385,20 +385,18 @@ void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const ve
     for (vector<Location>::const_iterator it = enemies_l.begin(); it != enemies_l.end(); ++it) {
         int id = it - enemies_l.begin();
         bool still = state.grid(*it).stationary > stillThresh;
-        bool timedout = state.grid(*it).stationary > 50;
         for (int d = still ? TDIRECTIONS : 0; d < TDIRECTIONS + 1; ++d) {
             const Location dest = state.getLocation(*it, d);
             const Square &square = state.grid(dest);
             if (!square.isWater && !square.isFood) {
                 enemies.push_back(Combat::Enemy(dest, id));
+                enemies.back().bonus += state.grid(*it).stationary * 5;
                 if (e_myHills(dest) < 6)
                     enemies.back().bonus *= 20;
                 else if (e_myHills(dest) < 12)
                     enemies.back().bonus *= 2;
                 if (e_attack(dest) < 5)
                     enemies.back().bonus *= 2;
-                if (timedout)
-                    enemies.back().bonus *= 4;
             }
         }
     }
