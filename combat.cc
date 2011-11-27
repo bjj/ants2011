@@ -446,7 +446,7 @@ void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const ve
         }
         ant.moves[TDIRECTIONS].bonus += 5;  // try to avoid jittering around
 
-        // get more aggressive close to home
+        // get more aggressive close to home?
         if (state.myAnts.size() > 150)
             ant.cost -= 75;
         else if (e_myHills(ant.loc) > 10 && e_myHills(ant.loc) < 50)
