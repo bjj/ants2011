@@ -20,7 +20,12 @@ public:
 
         inline int score() const
         {
-            return bonus * (weakness > antWeakness);
+            if (weakness > antWeakness)
+                return bonus;
+            else if (weakness == antWeakness)
+                return bonus / 2;
+            else
+                return 0;
         }
     };
 
