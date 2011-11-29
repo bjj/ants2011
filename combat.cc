@@ -163,6 +163,10 @@ private:
                 vs.attack(enemies[i]);
         }
         vs.apply();
+        for (uint i = 0; i < enemies.size(); ++i) {
+            if (move.overlap[i])
+                enemies[i].antWeakness = min(enemies[i].antWeakness, ant.weakness);
+        }
     }
 
     bool change(int n, int dir)
@@ -240,7 +244,7 @@ ostream & operator << (ostream &os, const Combat &combat)
 {
     os << "combat:" << endl << " score: " << -combat.e() << endl << " enemies:" << endl;
     for (vector<Combat::Enemy>::const_iterator it = combat.enemies.begin(); it != combat.enemies.end(); ++it) {
-        os << "  " << (*it).loc << " w(" << (*it).weakness << ":" << (*it).antWeakness << ") b(" << (*it).bonus << ")" << endl;
+        os << "  " << (*it).loc << " w(" << (*it).weakness << ":" << (*it).antWeakness << ") b(" << (*it).bonus << ") s(" << (*it).score() << ")" << endl;
     }
 
     os << endl << " ants:" << endl;
