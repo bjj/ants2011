@@ -25,7 +25,7 @@ public:
     };
 
     struct Ant {
-        Ant(const Location &l) : loc(l), dir(TDIRECTIONS), weakness(0), enemyWeakness(99), cost(250) { }
+        Ant(const Location &l) : loc(l), dir(TDIRECTIONS), weakness(0), enemyWeakness(99), cost(250), noOverlaps(false) { }
         struct Move {
             Move() : occupied(0), bonus(0) { }
             bool *occupied;
@@ -37,6 +37,7 @@ public:
         int dir;
         int weakness, enemyWeakness;
         int cost;
+        bool noOverlaps;
 
         inline int score() const
         {
@@ -178,42 +179,44 @@ private:
         defend_score -= ant.score();
         ant.dir = dir;
 
-        Combat::Ant::Weakness vs(ant);
-        for (uint i = 0; i < enemies.size(); ++i) {
-            if (move.overlap[i] != old.overlap[i]) {
-                attack_score -= enemies[i].score();
-                if (old.overlap[i])
-                    enemies[i].weakness -= 1;
-                else
-                    enemies[i].weakness += 1;
-            }
-            if (move.overlap[i])
-                vs.attack(enemies[i]);
-        }
-        vs.apply();
-
-        for (uint i = 0; i < enemies.size(); ++i) {
-            if (move.overlap[i] != old.overlap[i]) {
-                int antWeakness = 99;
-                for (uint j = 0; j < ants.size(); ++j) {
-                    Combat::Ant &ant2 = ants[j];
-                    Combat::Ant::Move &move2 = ant2.moves[ant2.dir];
-                    if (!move2.overlap[i])
-                        continue;
-                    antWeakness = min(ant2.weakness, antWeakness);
-
-                    defend_score -= ant2.score();
-                    Combat::Ant::Weakness vs2(ant2);
-                    for (uint k = 0; k < enemies.size(); ++k) {
-                        if (!move2.overlap[k])
-                            continue;
-                        vs2.attack(enemies[k]);
-                    }
-                    vs2.apply();
-                    defend_score += ant2.score();
+        if (!ant.noOverlaps) {
+            Combat::Ant::Weakness vs(ant);
+            for (uint i = 0; i < enemies.size(); ++i) {
+                if (move.overlap[i] != old.overlap[i]) {
+                    attack_score -= enemies[i].score();
+                    if (old.overlap[i])
+                        enemies[i].weakness -= 1;
+                    else
+                        enemies[i].weakness += 1;
                 }
-                enemies[i].antWeakness = antWeakness;
-                attack_score += enemies[i].score();
+                if (move.overlap[i])
+                    vs.attack(enemies[i]);
+            }
+            vs.apply();
+
+            for (uint i = 0; i < enemies.size(); ++i) {
+                if (move.overlap[i] != old.overlap[i]) {
+                    int antWeakness = 99;
+                    for (uint j = 0; j < ants.size(); ++j) {
+                        Combat::Ant &ant2 = ants[j];
+                        Combat::Ant::Move &move2 = ant2.moves[ant2.dir];
+                        if (!move2.overlap[i])
+                            continue;
+                        antWeakness = min(ant2.weakness, antWeakness);
+
+                        defend_score -= ant2.score();
+                        Combat::Ant::Weakness vs2(ant2);
+                        for (uint k = 0; k < enemies.size(); ++k) {
+                            if (!move2.overlap[k])
+                                continue;
+                            vs2.attack(enemies[k]);
+                        }
+                        vs2.apply();
+                        defend_score += ant2.score();
+                    }
+                    enemies[i].antWeakness = antWeakness;
+                    attack_score += enemies[i].score();
+                }
             }
         }
         defend_score += ant.score();
@@ -325,8 +328,21 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
         }
     }
 
-    vector<Location> ants = combatThreat(state.myAnts, state.enemyAnts, state.combatNeighborhood); // state.attackNeighborhood);
+    vector<Location> ants = combatThreat(state.myAnts, state.enemyAnts, state.combatNeighborhood);
     vector<Location> enemies = combatThreat(state.enemyAnts, state.myAnts, state.combatNeighborhood);
+
+    // Make sure ants next to combat ants are in the queue so they can jiggle out of the way
+    set<Location> neighbors;
+    for (State::iterator it = ants.begin(); it != ants.end(); ++it) {
+        neighbors.insert(*it);
+        for (int d = 0; d < TDIRECTIONS; ++d) {
+            const Location dest = state.getLocation(*it, d);
+            if (state.grid(dest).ant == 0)
+                neighbors.insert(dest);
+        }
+    }
+    ants.clear();
+    copy(neighbors.begin(), neighbors.end(), back_inserter(ants));
 
     combatLabels.reset();
     vector<int> equiv(state.myAnts.size() + state.enemyAnts.size() + 1);
@@ -412,6 +428,7 @@ void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const ve
     for (vector<Location>::const_iterator it = ants_l.begin(); it != ants_l.end(); ++it) {
         ants.push_back(Combat::Ant(*it));
         Combat::Ant &ant = ants.back();
+        bool anyOverlaps = false;
         for (int d = 0; d < TDIRECTIONS + 1; ++d) {
             const Location dest = state.getLocation(*it, d);
             ant.moves[d].occupied = &combatOccupied(dest);
@@ -421,6 +438,7 @@ void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const ve
                 bool overlaps = state.distance(enemies[j].loc, dest) <=
                                                state.attackradius;
                 ant.moves[d].overlap.push_back(overlaps);
+                anyOverlaps |= overlaps;
             }
 
             if (state.grid[dest.row][dest.col].hillPlayer > 0)
@@ -443,6 +461,9 @@ void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const ve
 
             if (e_food(dest) < 20 && e_food(dest) < e_food(*it))
                 ant.moves[d].bonus += 10;
+        }
+        if (!anyOverlaps) {
+            ant.noOverlaps = true;
         }
         ant.moves[TDIRECTIONS].bonus += 5;  // try to avoid jittering around
 
