@@ -239,14 +239,21 @@ void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
             int bonus = 0;
             if (state.grid(dest).hillPlayer == 0)
                 bonus = -100;
-            bonus += exploreBonusMul * (e_explore(dest) < e_explore(*it));
+
+            if (e_explore(dest) < e_explore(*it))
+                bonus += exploreBonusMul * (e_explore(dest) < e_explore(*it));
+            else if (e_explore(*it) > 9990)  // cul-de sac :(
+                bonus += exploreBonusMul * (e_enemies(dest) < e_enemies(*it));
+
             if (e_attack(dest) < e_attack(*it) && e_myHills(*it) > min(16, e_attack(*it))) {
                 bonus += attackBonusMul;
                 if (e_attack(dest) < 12)
                     bonus += attackBonusMul/2;
             }
+
             if (e_defend(dest) <= Territory::RANGE * 2 + 1)
                 bonus += 15 * (e_defend(dest) < e_defend(*it));
+
             ant.moves[d].bonus = bonus * bonusMul * Territory::RANGE / 10;
             ant.moves[d].bonus -= 2 * state.grid(dest).byWater;
         }
