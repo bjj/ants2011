@@ -442,7 +442,7 @@ void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const ve
             }
 
             if (state.grid[dest.row][dest.col].hillPlayer > 0)
-                ant.moves[d].bonus += state.grid[dest.row][dest.col].ant == -1 ? 100 : 50;
+                ant.moves[d].bonus += state.grid[dest.row][dest.col].ant == -1 ? 100 : -250;
 
             if (e_enemies(dest) < e_enemies(*it))
                 ant.moves[d].bonus += 7;
