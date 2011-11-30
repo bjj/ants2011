@@ -416,7 +416,7 @@ void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const ve
             if (!square.isWater && !square.isFood) {
                 enemies.push_back(Combat::Enemy(dest, id));
                 enemies.back().bonus += min(250, state.grid(*it).stationary * 2);
-                if (e_myHills(dest) < 6)
+                if (e_myHills(dest) < 4)
                     enemies.back().bonus *= 20;
                 /*
                 else if (e_myHills(dest) < 12)
