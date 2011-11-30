@@ -56,6 +56,7 @@ void Bot::playGame()
             state.noHills = state.myHills.size();
             state.avgHillSpacing = sqrt(state.rows * state.cols / state.noPlayers / state.noHills);
             state.bug << state.noHills << " hills, " << state.noPlayers << " players: spacing " << state.avgHillSpacing << endl;
+            homeDefense = state.neighborhood_offsets(state.viewradius + 2);
         }
         state.updateVisionInformation();
         makeMoves();

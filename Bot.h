@@ -67,6 +67,8 @@ struct Bot
     std::set<Location> interesting;
     std::vector<Location> hotspots;
 
+    std::vector<Location> homeDefense;
+
     Bot();
 
     void playGame();    //plays a single game of Ants
