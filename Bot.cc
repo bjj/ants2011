@@ -178,7 +178,7 @@ void Bot::makeMoves()
     if (state.myAnts.size() > 5) {
         int meekness = 20 - state.myAnts.size();
         for (set<Location>::iterator it = state.allEnemyHills.begin(); it != state.allEnemyHills.end(); ++it) {
-            if (e_enemies.empty() || e_enemies(*it) > meekness)
+            if (e_enemies.empty() || e_enemies(*it) > meekness || e_self(*it) < e_enemies(*it))
                 victims.push_back(*it);
         }
     }
