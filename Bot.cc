@@ -182,10 +182,12 @@ void Bot::makeMoves()
                 victims.push_back(*it);
         }
     }
+#if 0
     for (State::iterator it = state.enemyAnts.begin(); it != state.enemyAnts.end(); ++it) {
         if (e_myHills(*it) < state.viewradius + 2)
             victims.push_back(*it);
     }
+#endif
     e_attack.update(victims.begin(), victims.end());
 
     busy.reset();
@@ -218,18 +220,47 @@ void Bot::makeMoves()
             const Square &square = state.grid[loc.row][loc.col];
             if (square.isWater)
                 continue;
-            //bool urgent = e_enemies(loc) <= 8;
-            bool urgent = false;
 
-            if (urgent || defenders-- > 0) {
+            if (defenders-- > 0) {
+                /*
                 if (square.ant == 0)
                     sessile.insert(loc);
-                if (square.ant != 0 || urgent)
+                if (square.ant != 0)
+                    defense.push_back(loc);
+                */
+                if (e_self(loc) > 4)
                     defense.push_back(loc);
             }
         }
     }
+
+    for (State::iterator it = state.myHills.begin(); it != state.myHills.end(); ++it) {
+        if (!state.grid(*it).isVisible) {
+            defense.push_back(*it);
+            continue;
+        }
+        if (e_enemies(*it) > state.viewradius * 2)
+            continue;
+        for (State::iterator dt = homeDefense.begin(); dt != homeDefense.end(); ++dt) {
+            Location loc = state.deltaLocation(*it, (*dt).row, (*dt).col);
+            if (e_enemies(loc) != 1)
+                continue;
+            int steps = 1, dir, close = 1;
+            do {
+                dir = e_myHills.gradient(loc, &close);
+                if (dir != -1)
+                    loc = state.getLocation(loc, dir);
+                if (e_self(loc) <= steps)
+                    break;
+                steps++;
+            } while (steps < 20 && dir != -1 && close != 1);
+            defense.push_back(loc);
+        }
+    }
+
     copy(hotspots.begin(), hotspots.end(), back_inserter(defense));
+    for (State::iterator it = defense.begin(); it != defense.end(); ++it)
+        state.v.star(*it, 0.4, 0.8, 6, false);
     e_defend.update(defense.begin(), defense.end());
 
     territory(moves, sessile);

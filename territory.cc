@@ -251,8 +251,12 @@ void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
                     bonus += attackBonusMul/2;
             }
 
-            if (e_defend(dest) <= Territory::RANGE * 2 + 1)
-                bonus += 15 * (e_defend(dest) < e_defend(*it));
+            if (e_defend(dest) <= Territory::RANGE * 2 + 1) {
+                int defendMul = 15;
+                if (e_myHills(dest) < 20)
+                    defendMul = 30;
+                bonus += defendMul * (e_defend(dest) < e_defend(*it));
+            }
 
             ant.moves[d].bonus = bonus * bonusMul * Territory::RANGE / 10;
             ant.moves[d].bonus -= 2 * state.grid(dest).byWater;
