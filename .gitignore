@@ -1,7 +1,10 @@
 *.o
 MyBot
+MyBot.*
 *.core
 debug.txt
 debug.*.txt
 *.gmon
 test-*
+*.out
+Attic
