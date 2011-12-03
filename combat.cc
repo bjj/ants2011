@@ -323,7 +323,7 @@ Bot::combatThreat(const vector<Location> &ants, const vector<Location> &enemies,
 /**
  * Group ants into islands of isolated combat
  */
-void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
+void Bot::combat(Move::close_queue &moves, LocationSet &sessile)
 {
     // Reset a grid of locations for the search to use to determine what
     // locations are occupied.  Initialize it with true for impassible (or
@@ -341,7 +341,7 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
     vector<Location> enemies = combatThreat(state.enemyAnts, state.myAnts, state.combatNeighborhood);
 
     // Make sure ants next to combat ants are in the queue so they can jiggle out of the way
-    set<Location> neighbors;
+    LocationSet neighbors;
     for (State::iterator it = ants.begin(); it != ants.end(); ++it) {
         neighbors.insert(*it);
         for (int d = 0; d < TDIRECTIONS; ++d) {
@@ -391,7 +391,7 @@ void Bot::combat(Move::close_queue &moves, set<Location> &sessile)
  * Identify which ants are in position to be in combat and handle
  * them specially.
  */
-void Bot::combatGroup(Move::close_queue &moves, set<Location> &sessile, const vector<Location> &ants_l, const vector<Location> &enemies_l)
+void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vector<Location> &ants_l, const vector<Location> &enemies_l)
 {
 #if 0
 #ifdef VISUALIZER

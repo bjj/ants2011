@@ -184,7 +184,7 @@ ostream & operator << (ostream &os, const Territory &territory)
  * Identify which ants are in position to be in territory and handle
  * them specially.
  */
-void Bot::territory(Move::close_queue &moves, set<Location> &sessile)
+void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
 {
 
 #if 0

@@ -35,6 +35,21 @@ struct Location
     }
 };
 
+struct LocationHash {
+    inline size_t operator () (const Location &loc) const
+    {
+        return loc.col + loc.row * 256;
+    }
+};
+
+#if 0
+#include <tr1/unordered_set>
+typedef std::tr1::unordered_set<Location, LocationHash> LocationSet;
+#else
+#include <set>
+typedef std::set<Location> LocationSet;
+#endif
+
 std::ostream& operator<<(std::ostream &os, const Location &loc);
 
 

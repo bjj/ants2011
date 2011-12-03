@@ -177,7 +177,7 @@ void Bot::makeMoves()
     vector<Location> victims;
     if (state.myAnts.size() > 5) {
         int meekness = 20 - state.myAnts.size();
-        for (set<Location>::iterator it = state.allEnemyHills.begin(); it != state.allEnemyHills.end(); ++it) {
+        for (LocationSet::iterator it = state.allEnemyHills.begin(); it != state.allEnemyHills.end(); ++it) {
             if (e_enemies.empty() || e_enemies(*it) > meekness || e_self(*it) < e_enemies(*it))
                 victims.push_back(*it);
         }
@@ -197,7 +197,7 @@ void Bot::makeMoves()
         busy(state.food[i]) = 1;
 
     Move::close_queue moves;
-    set<Location> sessile;
+    LocationSet sessile;
 
     hotspots.clear();
     combat(moves, sessile);
@@ -317,7 +317,7 @@ void Bot::makeMoves()
     state.bug << "time taken: " << state.timer.getTime() << "ms" << endl << endl;
 }
 
-void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
+void Bot::eat(Move::close_queue &moves, LocationSet &sessile)
 {
     Passable passable(state);
     GridBfs<Passable> end;
@@ -327,7 +327,7 @@ void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
     // even at the beginning moving out of your bunker is good
     float explore = 0.25; // state.myAnts.size() > 4 ? 0.25 : 0.0;
     priority_queue<pair<float, Location> > food;
-    for (set<Location>::iterator it = state.allFood.begin(); it != state.allFood.end(); ++it) {
+    for (LocationSet::iterator it = state.allFood.begin(); it != state.allFood.end(); ++it) {
         float score = 0;
         score += -e_self(*it);
         score += 1 * state.grid(*it).isVisible;
@@ -336,7 +336,7 @@ void Bot::eat(Move::close_queue &moves, set<Location> &sessile)
         score += explore * max(0.0, state.viewradius - e_explore(*it));
         food.push(make_pair(score, *it));
     }
-    set<Location> ontheway;
+    LocationSet ontheway;
     while (!food.empty()) {
         const Location loc = food.top().second;
         food.pop();

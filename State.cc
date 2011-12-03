@@ -88,21 +88,21 @@ void State::updateVisionInformation()
         }
     }
 
-    for (set<Location>::iterator it = allEnemyHills.begin(); it != allEnemyHills.end();) {
+    for (LocationSet::iterator it = allEnemyHills.begin(); it != allEnemyHills.end();) {
         const Square &square = grid[(*it).row][(*it).col];
         if (square.isVisible && !square.isHill)
             allEnemyHills.erase(it++);
         else
             ++it;
     }
-    for (set<Location>::iterator it = allMyHills.begin(); it != allMyHills.end();) {
+    for (LocationSet::iterator it = allMyHills.begin(); it != allMyHills.end();) {
         const Square &square = grid[(*it).row][(*it).col];
         if (square.isVisible && !square.isHill)
             allMyHills.erase(it++);
         else
             ++it;
     }
-    for (set<Location>::iterator it = allFood.begin(); it != allFood.end();) {
+    for (LocationSet::iterator it = allFood.begin(); it != allFood.end();) {
         const Square &square = grid[(*it).row][(*it).col];
         if (square.isVisible && !square.isFood)
             allFood.erase(it++);
@@ -301,10 +301,10 @@ State::neighborhood_offsets(double max_dist) const
 vector<Location>
 State::dialate_neighborhood(const vector<Location> &orig, int n) const
 {
-    set<Location> neighborhood(orig.begin(), orig.end());
+    LocationSet neighborhood(orig.begin(), orig.end());
     while (n--) {
-        set<Location> dialated;
-        for (set<Location>::iterator it = neighborhood.begin(); it != neighborhood.end(); ++it) {
+        LocationSet dialated;
+        for (LocationSet::iterator it = neighborhood.begin(); it != neighborhood.end(); ++it) {
             for (int d = 0; d < TDIRECTIONS + 1; ++d) {
                 dialated.insert(Location((*it).row + DIRECTIONS[d][0], 
                                          (*it).col + DIRECTIONS[d][1]));

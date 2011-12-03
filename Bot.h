@@ -64,7 +64,7 @@ struct Bot
     Grid<char> busy;
     Grid<bool> combatOccupied;
     Grid<int> combatLabels;
-    std::set<Location> interesting;
+    LocationSet interesting;
     std::vector<Location> hotspots;
 
     std::vector<Location> homeDefense;
@@ -80,13 +80,13 @@ struct Bot
     Move pickMove(const Location &loc) const;
     void visualize();
 
-    void combat(Move::close_queue &moves, std::set<Location> &sessile);
-    void territory(Move::close_queue &moves, std::set<Location> &sessile);
-    void eat(Move::close_queue &moves, std::set<Location> &sessile);
+    void combat(Move::close_queue &moves, LocationSet &sessile);
+    void territory(Move::close_queue &moves, LocationSet &sessile);
+    void eat(Move::close_queue &moves, LocationSet &sessile);
 
     void combatLabel(std::vector<int> &equiv, int &nextLabel, const std::vector<Location> &ants);
     std::vector<Location> combatThreat(const std::vector<Location> &ants, const std::vector<Location> &enemies, const std::vector<Location> &neighborhood);
-    void combatGroup(Move::close_queue &moves, std::set<Location> &sessile, const std::vector<Location> &, const std::vector<Location> &);
+    void combatGroup(Move::close_queue &moves, LocationSet &sessile, const std::vector<Location> &, const std::vector<Location> &);
 };
 
 #endif //BOT_H_

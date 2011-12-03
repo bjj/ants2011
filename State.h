@@ -73,7 +73,7 @@ struct State
 
     Grid<Square> grid;
     std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
-    std::set<Location> allMyHills, allEnemyHills, allFood;
+    LocationSet allMyHills, allEnemyHills, allFood;
     std::vector<Location> visionNeighborhood, combatNeighborhood;
     int visibleSquares;
     typedef std::vector<Location>::iterator iterator;
