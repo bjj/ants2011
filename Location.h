@@ -13,15 +13,16 @@ struct Location
     int row, col;
 
     Location()
-    {
-        row = col = 0;
-    };
+        :row(0), col(0)
+    { }
 
     Location(int r, int c)
-    {
-        row = r;
-        col = c;
-    };
+        :row(r), col(c)
+    { }
+
+    Location(const Location &other)
+        :row(other.row), col(other.col)
+    { }
 
     bool operator < (const Location &other) const
     {
