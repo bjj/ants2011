@@ -31,11 +31,7 @@ const int BEHIND[5] = { 2, 3, 0, 1, 4 };
 const int RIGHT[5] = { 1, 2, 3, 0, 4 };
 const int LEFT[5] = { 3, 0, 1, 2, 4 };
 
-#if 0
-#define ALWAYS_INLINE __attribute__((__always_inline__))
-#else
-#define ALWAYS_INLINE
-#endif
+#define PURE __attribute__((__pure__))
 
 template <size_t N>
 class Mod
@@ -47,7 +43,7 @@ public:
         for (int i = -int(N) / 2; i < int(N) / 2; ++i)
             modulus[i] = (i + 10 * n) % n;
     }
-    inline int operator () (const int &i) const ALWAYS_INLINE
+    inline int operator () (const int &i) const PURE
     {
         return modulus[i];
     }
@@ -103,20 +99,20 @@ struct State
 
 
     //returns the new location from moving in a given direction with the edges wrapped
-    Location getLocation(const Location &loc, int direction) const ALWAYS_INLINE
+    Location getLocation(const Location &loc, int direction) const PURE
     {
         return Location(_row(loc.row + DIRECTIONS[direction][0]),
                         _col(loc.col + DIRECTIONS[direction][1]));
     }
 
     //returns the new location from moving in a given direction with the edges wrapped
-    Location normLocation(const Location &loc) const ALWAYS_INLINE
+    Location normLocation(const Location &loc) const PURE
     {
         return Location(_row(loc.row), _col(loc.col));
     }
 
     //returns the new location from moving in a given direction with the edges wrapped
-    Location deltaLocation(const Location &loc, int dr, int dc) const ALWAYS_INLINE
+    Location deltaLocation(const Location &loc, int dr, int dc) const PURE
     {
         return Location(_row(loc.row + dr), _col(loc.col + dc));
     }
