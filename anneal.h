@@ -4,6 +4,9 @@
 
 // restarting to sbest/ebest periodically?  if too far from best?
 
+#ifndef __ANNEAL_H
+#define __ANNEAL_H
+
 #include <limits>
 #include <math.h>
 #include <stdlib.h>
@@ -39,3 +42,5 @@ public:
         return best;
     }
 };
+
+#endif /* __ANNEAL_H */
