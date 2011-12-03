@@ -18,8 +18,8 @@ Edt::Edt(std::string _name, State &_state, bool block, bool pass)
 inline void
 Edt::enqueue(std::queue<QElem> & q, int why, int r, int c)
 {
-    r = (r + state.rows) % state.rows;
-    c = (c + state.cols) % state.cols;
+    r = state._row(r);
+    c = state._col(c);
     if ((*this)(r, c) == 0)
         q.push(QElem(r, c, why));
 }
@@ -43,8 +43,8 @@ UniEdt::UniEdt(std::string _name, State &_state, const Edt &_mask)
 inline void
 UniEdt::enqueue(std::queue<QElem> & q, int why, int maskDist, int r, int c)
 {
-    r = (r + state.rows) % state.rows;
-    c = (c + state.cols) % state.cols;
+    r = state._row(r);
+    c = state._col(c);
     if (mask[r][c] > maskDist)
         return;
     if ((*this)(r, c) == 0)
