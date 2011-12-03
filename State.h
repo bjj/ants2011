@@ -31,6 +31,32 @@ const int BEHIND[5] = { 2, 3, 0, 1, 4 };
 const int RIGHT[5] = { 1, 2, 3, 0, 4 };
 const int LEFT[5] = { 3, 0, 1, 2, 4 };
 
+#if 0
+#define ALWAYS_INLINE __attribute__((__always_inline__))
+#else
+#define ALWAYS_INLINE
+#endif
+
+template <size_t N>
+class Mod
+{
+public:
+    Mod() : modulus(a + N / 2) { }
+    void init(int n)
+    {
+        for (int i = -int(N) / 2; i < int(N) / 2; ++i)
+            modulus[i] = (i + 10 * n) % n;
+    }
+    inline int operator () (const int &i) const ALWAYS_INLINE
+    {
+        return modulus[i];
+    }
+protected:
+    int16_t *modulus;
+    int16_t a[N]; __attribute__((aligned(64)));
+};
+
+
 /*
     struct to store current state information
 */
@@ -56,6 +82,8 @@ struct State
     int visibleSquares;
     typedef std::vector<Location>::iterator iterator;
 
+    Mod<512> _row, _col;
+
     Timer timer;
     mutable Bug bug;
     mutable Visualizer v;
@@ -73,25 +101,24 @@ struct State
 
     double distance(const Location &loc1, const Location &loc2) const;
 
+
     //returns the new location from moving in a given direction with the edges wrapped
-    Location getLocation(const Location &loc, int direction) const
+    Location getLocation(const Location &loc, int direction) const ALWAYS_INLINE
     {
-        return Location( (loc.row + DIRECTIONS[direction][0] + rows) % rows,
-                         (loc.col + DIRECTIONS[direction][1] + cols) % cols );
+        return Location(_row(loc.row + DIRECTIONS[direction][0]),
+                        _col(loc.col + DIRECTIONS[direction][1]));
     }
 
     //returns the new location from moving in a given direction with the edges wrapped
-    Location normLocation(const Location &loc) const
+    Location normLocation(const Location &loc) const ALWAYS_INLINE
     {
-        return Location( (loc.row + rows) % rows,
-                         (loc.col + cols) % cols );
+        return Location(_row(loc.row), _col(loc.col));
     }
 
     //returns the new location from moving in a given direction with the edges wrapped
-    Location deltaLocation(const Location &loc, int dr, int dc) const
+    Location deltaLocation(const Location &loc, int dr, int dc) const ALWAYS_INLINE
     {
-        return Location( (loc.row + dr + rows) % rows,
-                         (loc.col + dc + cols) % cols );
+        return Location(_row(loc.row + dr), _col(loc.col + dc));
     }
 
     void updateVisionInformation();

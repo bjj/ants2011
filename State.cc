@@ -26,6 +26,8 @@ State::~State()
 //sets the state up
 void State::setup()
 {
+    _row.init(rows);
+    _col.init(cols);
     visionNeighborhood = neighborhood_offsets(viewradius);
     combatNeighborhood = dialate_neighborhood(neighborhood_offsets(attackradius), 2);
     grid.init(*this);
