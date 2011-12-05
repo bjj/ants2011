@@ -15,7 +15,7 @@ template <typename Solution, int RateI = 958>
 class Anneal
 {
 public:
-    Solution operator () (Solution &s)
+    Solution operator () (Solution &s) __attribute__((__flatten__))
     {
         double Rate = RateI / 1000.0;
         int per_temp = s.iterations();
