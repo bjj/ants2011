@@ -22,9 +22,6 @@ Bot::Bot()
     , e_myHills("home", state, false)
     , ep_self("self", state, false, true)
     , ep_enemies("enemies", state, false, true)
-    , busy()
-    , combatOccupied()
-    , combatLabels()
 {
 }
 
@@ -45,6 +42,8 @@ void Bot::playGame()
 
     busy.init(state);
     combatOccupied.init(state);
+    enemyThreat.init(state);
+    selfThreat.init(state);
     combatLabels.init(state);
 
     //continues making moves while the game is not over

@@ -300,11 +300,10 @@ void Bot::combatLabel(vector<int> &equiv, int &nextLabel, const vector<Location>
  * Given two lists of ants find which ones threaten the other
  */
 vector<Location>
-Bot::combatThreat(const vector<Location> &ants, const vector<Location> &enemies, const vector<Location> &neighborhood)
+Bot::combatThreat(const vector<Location> &ants, const vector<Location> &enemies,  Grid<bool> &threat)
 {
-    Grid<bool> threat;
-    threat.init(state);
-
+    const vector<Location> &neighborhood = state.combatNeighborhood;
+    threat.reset();
     for (vector<Location>::const_iterator it = enemies.begin(); it != enemies.end(); ++it) {
         for (vector<Location>::const_iterator ct = neighborhood.begin(); ct != neighborhood.end(); ++ct) {
             const Location loc = state.deltaLocation(*it, (*ct).row, (*ct).col);
@@ -337,8 +336,8 @@ void Bot::combat(Move::close_queue &moves, LocationSet &sessile)
         }
     }
 
-    vector<Location> ants = combatThreat(state.myAnts, state.enemyAnts, state.combatNeighborhood);
-    vector<Location> enemies = combatThreat(state.enemyAnts, state.myAnts, state.combatNeighborhood);
+    vector<Location> ants = combatThreat(state.myAnts, state.enemyAnts, enemyThreat);
+    vector<Location> enemies = combatThreat(state.enemyAnts, state.myAnts, selfThreat);
 
     // Make sure ants next to combat ants are in the queue so they can jiggle out of the way
     LocationSet neighbors;
