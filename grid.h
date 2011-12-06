@@ -32,9 +32,14 @@ public:
         delete data;
     }
 
+    void fill(const T &value)
+    {
+        std::fill(data, data + rows * cols, value);
+    }
+
     void reset()
     {
-        std::fill(data, data + rows * cols, T());
+        fill(T());
     }
 
     T & operator () (const Location &loc)
