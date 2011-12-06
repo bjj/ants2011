@@ -127,7 +127,7 @@ extern State state;
 
 struct Passable
 {
-    bool operator () (const Location &loc)
+    bool operator () (const Location &loc) const
     {
         const Square &square = state.grid(loc);
         return !square.isWater;
@@ -136,7 +136,7 @@ struct Passable
 
 struct PassableButMyHills
 {
-    bool operator () (const Location &loc)
+    bool operator () (const Location &loc) const
     {
         const Square &square = state.grid(loc);
         return !(square.isWater || square.hillPlayer == 0);

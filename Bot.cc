@@ -119,17 +119,6 @@ makeMove(const Location &loc, const Edt &edt, int add = 0, int breakpoint = 9999
     return Move(loc, dir, score, close, edt.name);
 }
 
-Move Bot::pickMove(const Location &loc) const
-{
-    Move::score_queue pick;
-    //pick.push(makeMove(loc, e_food, 0, 8, 5, 2));
-    pick.push(makeMove(loc, e_explore));
-    //pick.push(makeMove(loc, e_revisit, 5));
-    pick.push(makeMove(loc, e_attack, 0, 20, 2, 3));
-    pick.push(makeMove(loc, e_defend, 0, 8, 4, 1));
-    return pick.top();
-}
-
 //makes the bots moves for the turn
 void Bot::makeMoves()
 {
@@ -250,20 +239,6 @@ void Bot::makeMoves()
     e_defend.update(defense.begin(), defense.end());
 
     territory(moves, sessile);
-
-    for(int ant=0; ant<(int)state.myAnts.size(); ant++) {
-        const Location & loc = state.myAnts[ant];
-
-        if (sessile.count(loc))
-            continue;
-
-        const Move m = pickMove(loc);
-
-        state.bug << "ant " << ant << " " << loc << ": " << CDIRECTIONS[m.dir] << " (" << m.close << ")" << endl;
-
-        if (m.dir >= 0)
-            moves.push(m);
-    }
 
     visualize();
 
