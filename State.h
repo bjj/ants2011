@@ -143,7 +143,78 @@ struct PassableButMyHills
     }
 };
 
+template <typename P = Passable>
+struct Unidirectional : public P
+{
+    Unidirectional(const Grid<int> &f) : flow(f) { }
+
+
+    bool operator () (const Location &loc) const
+    {
+        return P::operator()(loc) && flow(loc) <= origin;
+    }
+
+    void setOrigin(const Location &loc)
+    {
+        origin = flow(loc);
+    }
+
+private:
+    const Grid<int> &flow;
+    int origin;
+};
+
+struct UnitCost
+{
+    inline bool operator () (const Location &loc) const
+    {
+        return 1;
+    }
+};
+
+struct NarrowCost
+{
+    inline bool operator () (const Location &loc) const
+    {
+        //                   OPEN WALL GAP/CORNER NICHE STUCK
+        const int costs[] = { 1,   2,     20,      50,  1000 };
+        const Square &square = state.grid(loc);
+        return costs[int(square.byWater)];
+    }
+};
+
+struct NarrowBusyCost : NarrowCost
+{
+    inline bool operator () (const Location &loc) const
+    {
+        const Square &square = state.grid(loc);
+        return NarrowCost::operator()(loc) + 4 * square.stationary;
+    }
+};
+
 std::ostream& operator<<(std::ostream &os, const State &state);
 std::istream& operator>>(std::istream &is, State &state);
+
+#include <iostream>
+#include <iomanip>
+
+template <typename T>
+std::ostream& operator<<(std::ostream &os, const Grid<T> &grid)
+{
+    os << std::hex;
+    for (int r = 0; r < state.rows; ++r) {
+        for (int c = 0; c < state.cols; ++c) {
+            if (grid(r,c) >= 1000)
+                os << " __";
+            else if (grid(r,c) > 0xff)
+                os << " xx";
+            else
+                os << std::setw(3) << grid(r,c);
+        }
+        os << std::endl;
+    }
+    os << std::dec;
+    return os;
+}
 
 #endif //STATE_H_
