@@ -12,12 +12,11 @@ class GridBfs : std::iterator<std::forward_iterator_tag, Location>
 public:
     GridBfs()
         : dist(-1)
-        , passable(0)
     { }
 
-    GridBfs(Passable &p, const Location &start)
+    GridBfs(const Location &start, const Passable &p = Passable())
         : dist(0)
-        , passable(&p)
+        , passable(p)
     {
         visited.reset();
         q.push(start);
@@ -94,7 +93,7 @@ protected:
         int r = state._row(q.front().row + dr);
         int c = state._col(q.front().col + dc);
         const Location loc(r, c);
-        if (!visited(loc) && (*passable)(loc)) {
+        if (!visited(loc) && passable(loc)) {
             q.push(loc);
             visited(loc) = dir + 1;
         }
@@ -107,7 +106,7 @@ protected:
         enqueue(0, -1, 1); // go back E
     }
     int dist;
-    Passable *passable;
+    Passable passable;
     std::queue<Location> q;
     Grid<char> visited;
 };

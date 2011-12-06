@@ -305,7 +305,6 @@ void Bot::makeMoves()
 
 void Bot::eat(Move::close_queue &moves, LocationSet &sessile)
 {
-    Passable passable(state);
     GridBfs<Passable> end;
 
     state.v.setLineColor(0,0,200);
@@ -326,7 +325,7 @@ void Bot::eat(Move::close_queue &moves, LocationSet &sessile)
     while (!food.empty()) {
         const Location loc = food.top().second;
         food.pop();
-        GridBfs<Passable> bfs(passable, loc);
+        GridBfs<Passable> bfs(loc);
         for(++bfs; bfs != end; ++bfs) {
             const Square &square = state.grid(*bfs);
             //if (square.ant == 0 && e_food(*bfs) == bfs.distance()+1 && !sessile.count(*bfs)) {

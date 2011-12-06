@@ -123,34 +123,27 @@ struct State
 
 };
 
+extern State state;
+
 struct Passable
 {
-    Passable(const State &s) : state(&s) { }
-
     bool operator () (const Location &loc)
     {
-        const Square &square = state->grid(loc);
+        const Square &square = state.grid(loc);
         return !square.isWater;
     }
-
-protected:
-    const State *state;
 };
 
-struct PassableButMyHills : public Passable
+struct PassableButMyHills
 {
-    PassableButMyHills(const State &s) : Passable(s) { }
-
     bool operator () (const Location &loc)
     {
-        const Square &square = state->grid(loc);
+        const Square &square = state.grid(loc);
         return !(square.isWater || square.hillPlayer == 0);
     }
 };
 
 std::ostream& operator<<(std::ostream &os, const State &state);
 std::istream& operator>>(std::istream &is, State &state);
-
-extern State state;
 
 #endif //STATE_H_
