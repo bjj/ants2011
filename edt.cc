@@ -5,9 +5,8 @@
 
 #include <stdio.h>
 
-Edt::Edt(std::string _name, State &_state, bool block, bool pass)
-    : state(_state)
-    , name(_name)
+Edt::Edt(std::string _name, bool block, bool pass)
+    : name(_name)
     , myHillsBlock(block)
     , allPass(pass)
     , empty_(true)
@@ -33,8 +32,8 @@ Edt::enqueueAll(std::queue<QElem> & q, int why, int r, int c)
     enqueue(q, why, r, c-1);
 }
 
-UniEdt::UniEdt(std::string _name, State &_state, const Edt &_mask)
-    : Edt(_name, _state)
+UniEdt::UniEdt(std::string _name, const Edt &_mask)
+    : Edt(_name)
     , mask(_mask)
 {
     ;
@@ -64,8 +63,6 @@ UniEdt::enqueueAll(std::queue<QElem> & q, int why, int r, int c)
 void
 Edt::update(std::queue<QElem> &food)
 {
-    init(state);
-
     empty_ = food.empty();
 
     for (int r = 0; r < state.rows; ++r) {
@@ -135,8 +132,8 @@ Edt::euclidean(const Location &loc, int limit) const
 std::ostream& operator<<(std::ostream &os, const Edt &edt)
 {
     os << std::hex;
-    for (int r = 0; r < edt.state.rows; ++r) {
-        for (int c = 0; c < edt.state.cols; ++c) {
+    for (int r = 0; r < state.rows; ++r) {
+        for (int c = 0; c < state.cols; ++c) {
             if (edt(r,c) >= 1000)
                 os << " __";
             else if (edt(r,c) > 0xff)

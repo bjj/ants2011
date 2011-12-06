@@ -55,7 +55,6 @@ struct Move
 */
 struct Bot
 {
-    State state;
     int maxVisibleSquares, maxVisibleTurn;
     Edt e_food;
     UniEdt e_explore;

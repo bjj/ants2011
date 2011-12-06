@@ -6,42 +6,30 @@
 
 #include "Location.h"
 
-class State;
 template <typename Passable> class GridBfs;
 
-extern int getStateRows(const State &state);
-extern int getStateCols(const State &state);
+struct GridBase {
+    static int rows, cols;
+};
 
 template <typename T>
-class Grid
+class Grid : public GridBase
 {
 public:
-    Grid() : rows(0), cols(0), data(0) { }
+    Grid()
+        : data(0)
+    {
+        data = new T[rows * cols];
+    }
     Grid(const Grid &other)
-        : rows(other.rows), cols(other.cols), data(0)
+        : data(0)
     {
         data = new T[rows * cols];
         std::copy(other.data, other.data + rows * cols, data);
     }
-    ~Grid() { delete data; }
-
-    template <typename U>
-    void init(const Grid<U> &grid)
+    ~Grid()
     {
-        init(grid.rows, grid.cols);
-    }
-    void init(const State &state)
-    {
-        init(getStateRows(state), getStateCols(state));
-    }
-    void init(int r, int c)
-    {
-        if (!data) {
-            rows = r;
-            cols = c;
-            data = new T[rows * cols];
-            reset();
-        }
+        delete data;
     }
 
     void reset()
@@ -75,12 +63,6 @@ public:
     }
     Grid & operator = (const Grid &rhs)
     {
-        if (data == 0 || rows != rhs.rows || cols != rhs.cols) {
-            rows = rhs.rows;
-            cols = rhs.cols;
-            delete data;
-            data = new T[rows * cols];
-        }
         copy(rhs.data, rhs.data + rows * cols, data);
         return *this;
     }
@@ -89,7 +71,6 @@ protected:
     template <typename> friend class GridBfs;
     template <typename> friend class Grid;
 
-    int rows, cols;
     T *data;
 };
 

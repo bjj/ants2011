@@ -6,6 +6,7 @@ using namespace std;
 
 //constructor
 State::State()
+    : rows(200), cols(200) // for grid
 {
     rows = cols = 0;
     gameover = 0;
@@ -28,9 +29,10 @@ void State::setup()
 {
     _row.init(rows);
     _col.init(cols);
+    GridBase::rows = rows;
+    GridBase::cols = cols;
     visionNeighborhood = neighborhood_offsets(viewradius);
     combatNeighborhood = dialate_neighborhood(neighborhood_offsets(attackradius), 2);
-    grid.init(*this);
 }
 
 //resets all non-water squares to land and clears the bots ant vector

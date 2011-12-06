@@ -6,10 +6,10 @@ OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=MyBot
 
 #Uncomment the following to enable debugging
-CFLAGS += -g
+#CFLAGS += -g
 #CFLAGS += -pg
 #LDFLAGS += -pg
-CFLAGS += -DDEBUG
+#CFLAGS += -DDEBUG
 #CFLAGS += -DVISUALIZER
 
 CFLAGS+=-O3 -funroll-loops

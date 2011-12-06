@@ -200,7 +200,6 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
 #endif
 
     Grid<int> tgrid;
-    tgrid.init(state);
     tgrid.reset();
 
     vector<Territory::Ant> ants;
@@ -262,7 +261,7 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
             ant.moves[d].bonus -= 2 * state.grid(dest).byWater;
         }
 
-        GridBfs<Passable> bfs(state.grid, passable, *it);
+        GridBfs<Passable> bfs(passable, *it);
         for(++bfs; bfs != end && bfs.distance() <= Territory::RANGE+1; ++bfs) {
             if (bfs.distance() < Territory::RANGE)
                 continue;

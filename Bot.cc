@@ -6,56 +6,43 @@
 #include "edt.h"
 #include "gridbfs.h"
 
+State state;
+
 using namespace std;
 
 //constructor
 Bot::Bot()
     : maxVisibleSquares(0)
     , maxVisibleTurn(-1)
-    , e_food("food", state)
-    , e_explore("explore", state, e_myHills)
-    , e_revisit("revisit", state)
-    , e_attack("attack", state)
-    , e_defend("defend", state)
-    , e_enemies("enemies", state, false)
-    , e_self("self", state, false)
-    , e_myHills("home", state, false)
-    , ep_self("self", state, false, true)
-    , ep_enemies("enemies", state, false, true)
+    , e_food("food")
+    , e_explore("explore", e_myHills)
+    , e_revisit("revisit")
+    , e_attack("attack")
+    , e_defend("defend")
+    , e_enemies("enemies", false)
+    , e_self("self", false)
+    , e_myHills("home", false)
+    , ep_self("self", false, true)
+    , ep_enemies("enemies", false, true)
 {
 }
 
 //plays a single game of Ants.
 void Bot::playGame()
 {
-    //reads the game parameters and sets up
-    cin >> state;
+    homeDefense = state.neighborhood_offsets(state.viewradius + 2);
 
-    if (state.rows == 0 || state.cols == 0)
-        exit(0);
-
-    srandom(state.seed);
-    srand48(state.seed);
-
-    state.setup();
     endTurn();
-
-    busy.init(state);
-    combatOccupied.init(state);
-    enemyThreat.init(state);
-    selfThreat.init(state);
-    combatLabels.init(state);
 
     //continues making moves while the game is not over
     while(cin >> state)
     {
         if (state.turn == 1) {
             if (state.noPlayers == 0)
-                state.noPlayers = 5; // not sent by server yet
+                state.noPlayers = 5; // XXX
             state.noHills = state.myHills.size();
             state.avgHillSpacing = sqrt(state.rows * state.cols / state.noPlayers / state.noHills);
             state.bug << state.noHills << " hills, " << state.noPlayers << " players: spacing " << state.avgHillSpacing << endl;
-            homeDefense = state.neighborhood_offsets(state.viewradius + 2);
         }
         state.updateVisionInformation();
         makeMoves();
@@ -339,7 +326,7 @@ void Bot::eat(Move::close_queue &moves, LocationSet &sessile)
     while (!food.empty()) {
         const Location loc = food.top().second;
         food.pop();
-        GridBfs<Passable> bfs(state.grid, passable, loc);
+        GridBfs<Passable> bfs(passable, loc);
         for(++bfs; bfs != end; ++bfs) {
             const Square &square = state.grid(*bfs);
             //if (square.ant == 0 && e_food(*bfs) == bfs.distance()+1 && !sessile.count(*bfs)) {

@@ -17,6 +17,17 @@ int main(int argc, char *argv[])
 {
     cout.sync_with_stdio(0); //this line makes your bot faster
 
+    //reads the game parameters and sets up
+    cin >> state;
+
+    if (state.rows == 0 || state.cols == 0)
+        exit(0);
+
+    srandom(state.seed);
+    srand48(state.seed);
+
+    state.setup();
+
     Bot bot;
     bot.playGame();
 

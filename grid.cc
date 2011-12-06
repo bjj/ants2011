@@ -1,13 +1,3 @@
+#include "grid.h"
 
-#include "State.h"
-
-int getStateRows(const State &state)
-{
-    return state.rows;
-}
-
-int getStateCols(const State &state)
-{
-    return state.cols;
-}
-
+int GridBase::rows = 200, GridBase::cols = 200;

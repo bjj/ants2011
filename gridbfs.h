@@ -15,12 +15,11 @@ public:
         , passable(0)
     { }
 
-    template <typename T>
-    GridBfs(const Grid<T> &grid, Passable &p, const Location &start)
+    GridBfs(Passable &p, const Location &start)
         : dist(0)
         , passable(&p)
     {
-        visited.init(grid);
+        visited.reset();
         q.push(start);
         visited(start) = 5; // "don't move"
         q.push(Location(-1, -1));
@@ -92,8 +91,8 @@ public:
 protected:
     void enqueue(int dr, int dc, int dir)
     {
-        int r = (q.front().row + dr + visited.rows) % visited.rows;
-        int c = (q.front().col + dc + visited.cols) % visited.cols;
+        int r = state._row(q.front().row + dr);
+        int c = state._col(q.front().col + dc);
         const Location loc(r, c);
         if (!visited(loc) && (*passable)(loc)) {
             q.push(loc);

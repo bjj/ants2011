@@ -151,4 +151,6 @@ struct PassableButMyHills : public Passable
 std::ostream& operator<<(std::ostream &os, const State &state);
 std::istream& operator>>(std::istream &is, State &state);
 
+extern State state;
+
 #endif //STATE_H_

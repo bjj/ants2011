@@ -29,7 +29,8 @@ protected:
     };
 
 public:
-    Edt(std::string _name, State &_state, bool block = true, bool pass = false);
+    Edt(std::string _name, bool block = true, bool pass = false);
+
     template <typename I>
     void update(I begin, I end)
     {
@@ -68,7 +69,6 @@ protected:
     void enqueue(std::queue<QElem> & q, int why, int r, int c);
     virtual void enqueueAll(std::queue<QElem> & q, int why, int r, int c);
 
-    State &state;
 public:
     std::string name;
 protected:
@@ -80,7 +80,7 @@ protected:
 class UniEdt : public Edt
 {
 public:
-    UniEdt(std::string _name, State &_state, const Edt &mask);
+    UniEdt(std::string _name, const Edt &mask);
     void enqueue(std::queue<QElem> & q, int why, int maskDist, int r, int c);
     void enqueueAll(std::queue<QElem> & q, int why, int r, int c);
 
