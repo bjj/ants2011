@@ -19,11 +19,11 @@ Bot::Bot()
     , e_revisit("revisit")
     , e_attack("attack")
     , e_defend("defend")
-    , e_enemies("enemies", false)
-    , e_self("self", false)
-    , e_myHills("home", false)
-    , ep_self("self", false, true)
-    , ep_enemies("enemies", false, true)
+    , e_enemies("enemies")
+    , e_self("self")
+    , e_myHills("home")
+    , ep_self("self")
+    , ep_enemies("enemies")
 {
 }
 

@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-c -Wall
 LDFLAGS=-O2 -lm
-SOURCES=Bot.cc MyBot.cc State.cc edt.cc Location.cc combat.cc VisBot.cc grid.cc territory.cc
+SOURCES=Bot.cc MyBot.cc State.cc Location.cc combat.cc VisBot.cc grid.cc territory.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=MyBot
 

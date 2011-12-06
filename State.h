@@ -125,6 +125,14 @@ struct State
 
 extern State state;
 
+struct AllPassable
+{
+    bool operator () (const Location &loc) const
+    {
+        return true;
+    }
+};
+
 struct Passable
 {
     bool operator () (const Location &loc) const
@@ -204,7 +212,9 @@ std::ostream& operator<<(std::ostream &os, const Grid<T> &grid)
     os << std::hex;
     for (int r = 0; r < state.rows; ++r) {
         for (int c = 0; c < state.cols; ++c) {
-            if (grid(r,c) >= 1000)
+            if (grid(r,c) == 9999)
+                os << " []";
+            else if (grid(r,c) >= 1000)
                 os << " __";
             else if (grid(r,c) > 0xff)
                 os << " xx";
