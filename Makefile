@@ -23,7 +23,7 @@ $(EXECUTABLE): $(OBJECTS)
 
 clean: 
 	-rm -f ${EXECUTABLE} ${OBJECTS} *.d
-	-rm -f debug.txt
+	-rm -f debug.txt ${EXECUTABLE}.gmon
 
 .PHONY: all clean
 
