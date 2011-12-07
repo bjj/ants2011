@@ -22,8 +22,6 @@ Bot::Bot()
     , e_enemies("enemies")
     , e_self("self")
     , e_myHills("home")
-    , ep_self("self")
-    , ep_enemies("enemies")
 {
 }
 
@@ -145,8 +143,6 @@ void Bot::makeMoves()
 
     e_enemies.update(state.enemyAnts.begin(), state.enemyAnts.end());
     e_self.update(state.myAnts.begin(), state.myAnts.end());
-    ep_enemies.update(state.enemyAnts.begin(), state.enemyAnts.end());
-    ep_self.update(state.myAnts.begin(), state.myAnts.end());
     e_food.update(state.allFood.begin(), state.allFood.end());
 
     vector<Location> victims;

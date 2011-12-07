@@ -60,7 +60,6 @@ struct Bot
     UniEdt e_explore;
     Edt e_revisit, e_attack, e_defend;
     Gpath<Passable, UnitCost> e_enemies, e_self, e_myHills;
-    Gpath<AllPassable, UnitCost> ep_self, ep_enemies;
     Grid<char> busy;
     Grid<bool> combatOccupied;
     Grid<bool> enemyThreat, selfThreat;;
