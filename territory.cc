@@ -12,8 +12,6 @@ using namespace std;
 class Territory
 {
 public:
-    static const int RANGE = 4;
-
     struct Ant {
         Ant(const Location &l) : loc(l), dir(TDIRECTIONS), cost(250) { }
         struct Move {
@@ -145,7 +143,6 @@ private:
             if (++count == 1)
                 ++_score;
         }
-//state.bug << ant.loc << " " << (&old-&ant.moves[0]) << "->" << dir << " s " << _score << endl;
         _score += ant.score();
         return true;
     }
@@ -164,20 +161,41 @@ private:
 
 ostream & operator << (ostream &os, const Territory &territory)
 {
-    os << "territory:" << endl << " score: " << -territory.e() << endl;
-#if 0
-    for (vector<Territory::Enemy>::const_iterator it = territory.enemies.begin(); it != territory.enemies.end(); ++it) {
-        os << "  " << (*it).loc << " w(" << (*it).weakness << ")" << endl;
-    }
-
-    os << endl << " ants:" << endl;
-    for (vector<Territory::Ant>::const_iterator it = territory.ants.begin(); it != territory.ants.end(); ++it) {
-        os << "  " << (*it).loc << " " << CDIRECTIONS[(*it).dir] << " w(" << (*it).weakness << ":" << (*it).enemyWeakness <<") b(" << (*it).moves[(*it).dir].bonus << ")" << " s(" << (*it).score() << ")" << endl;
-    }
-    os << endl;
-#endif
-
+    os << "territory score: " << -territory.e() << endl;
     return os;
+}
+
+struct Offset {
+    Offset(const Location &l) : loc(l) { }
+    Location operator () (const Location &disp) const
+    {
+        return state.deltaLocation(loc, disp.row, disp.col);
+    }
+private:
+    Location loc;
+};
+
+struct PassableAndCanUnsee : Passable {
+    PassableAndCanUnsee(const Grid<bool> &cU) : cantUnsee(cU) { }
+    bool operator () (const Location &loc) const
+    {
+        return Passable::operator()(loc) && !cantUnsee(loc);
+    }
+private:
+    const Grid<bool> &cantUnsee;
+};
+
+// ok this predicate application is probably backwards from what
+// would really be used in a std::transform_if...
+template <typename I, typename O, typename UnaryFunction, typename Predicate>
+O transform_if(I begin, I end, O out, UnaryFunction f, Predicate pred)
+{
+    for (; begin != end; ++begin) {
+        typeof(*begin) tmp = f(*begin);
+        if (pred(tmp))
+            *out++ = tmp;
+    }
+    return out;
 }
 
 /**
@@ -186,24 +204,15 @@ ostream & operator << (ostream &os, const Territory &territory)
  */
 void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
 {
-
-#if 0
-#ifdef VISUALIZER
-    for (int r = 0; r < state.rows; ++r) {
-        for (int c = 0; c < state.cols; ++c) {
-            if (combatOccupied(r, c)) {
-                state.v.tileBorder(Location(r, c), "MM");
-            }
-        }
-    }
-#endif
-#endif
+    Grid<bool> cantUnsee;
+    cantUnsee.reset();
+    paint(cantUnsee, state.myAnts.begin(), state.myAnts.end(),
+        visionNeighborhood_m1.begin(), visionNeighborhood_m1.end());
 
     Grid<int> tgrid;
     tgrid.reset();
 
     vector<Territory::Ant> ants;
-    GridBfs<Passable> end;
 
     int attackBonusMul = 23;
     int exploreBonusMul = 17;
@@ -226,7 +235,6 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
     for (State::iterator it = state.myAnts.begin(); it != state.myAnts.end(); ++it) {
         if (sessile.count(*it))
             continue;
-        int found = 0;
         ants.push_back(Territory::Ant(*it));
         Territory::Ant &ant = ants.back();
 
@@ -238,11 +246,13 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
             if (state.grid(dest).hillPlayer == 0)
                 bonus = -100;
 
+            if (e_explore.toward(*it, dest))
+                bonus += 1;
+/*
             if (e_explore(dest) < e_explore(*it))
                 bonus += exploreBonusMul * (e_explore(dest) < e_explore(*it));
             else if (e_explore(*it) > 9990)  // cul-de sac :(
                 bonus += exploreBonusMul * (e_enemies(dest) < e_enemies(*it));
-
             if (e_attack(dest) < e_attack(*it) && e_myHills(*it) > min(16, e_attack(*it))) {
                 bonus += attackBonusMul;
                 if (e_attack(dest) < 12)
@@ -255,56 +265,27 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
                     defendMul = 30;
                 bonus += defendMul * (e_defend(dest) < e_defend(*it));
             }
+*/
 
-            ant.moves[d].bonus = bonus * bonusMul * Territory::RANGE / 10;
+            ant.moves[d].bonus = bonus;
             ant.moves[d].bonus -= 2 * state.grid(dest).byWater;
         }
 
-        GridBfs<Passable> bfs(*it);
-        for(++bfs; bfs != end && bfs.distance() <= Territory::RANGE+1; ++bfs) {
-            if (bfs.distance() < Territory::RANGE)
-                continue;
-            if (e_self(*bfs) - 1 != bfs.distance())
-                continue;
-            found++;
-            int dr = (*bfs).row - (*it).row;
-            int dc = (*bfs).col - (*it).col;
-            if (dr > state.rows / 2) dr -= state.rows;
-            if (dc > state.cols / 2) dc -= state.cols;
-
-            // NESW
-
-            // XXX these are all wrong with thin obstacles :(
-            switch (bfs.distance()) {
-            case Territory::RANGE:
-                tgrid(*bfs)++;
-                if (dr >= 0)
-                    ant.moves[0].lose.push_back(*bfs);
-                if (dr <= 0)
-                    ant.moves[2].lose.push_back(*bfs);
-                if (dc >= 0)
-                    ant.moves[3].lose.push_back(*bfs);
-                if (dc <= 0)
-                    ant.moves[1].lose.push_back(*bfs);
-                break;
-            case Territory::RANGE+1:
-                if (dr < 0)
-                    ant.moves[0].gain.push_back(*bfs);
-                else if (dr > 0)
-                    ant.moves[2].gain.push_back(*bfs);
-                if (dc < 0)
-                    ant.moves[3].gain.push_back(*bfs);
-                else if (dc > 0)
-                    ant.moves[1].gain.push_back(*bfs);
-                break;
-            }
+        PassableAndCanUnsee passable(cantUnsee);
+        for (int d = 0; d < TDIRECTIONS; ++d) {
+            transform_if(state.visionArc[BEHIND[d]].begin(), state.visionArc[BEHIND[d]].end(),
+                      back_inserter(ant.moves[d].lose), Offset(*it), passable);
+            for (State::iterator loser = ant.moves[d].lose.begin(); loser != ant.moves[d].lose.end(); ++loser)
+                tgrid(*loser)++;
+            transform_if(state.visionArc[d].begin(), state.visionArc[d].end(),
+                      back_inserter(ant.moves[d].gain), Offset(state.getLocation(*it, d)), passable);
         }
     }
 #if 0
 #ifdef VISUALIZER
     for (uint i = 0; i < ants.size(); ++i) {
-        //int d = state.turn % TDIRECTIONS;
-        for (int d = 0; d < TDIRECTIONS + 1; ++d) {
+        int d = state.turn % TDIRECTIONS; {
+        //for (int d = 0; d < TDIRECTIONS + 1; ++d) {
             Territory::Ant::Move &move = ants[i].moves[d];
             state.v.setFillColor(0, 128, 0, 0.2);
             for (uint g = 0; g < move.gain.size(); ++g)
@@ -328,12 +309,12 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
     state.v.setFillColor(128, 0, 0, 0.5);
     for (int row = 0; row < state.rows; ++row)
         for (int col = 0; col < state.cols; ++col)
-            if (e_self[row][col] == Territory::RANGE+1 && best.territory[row][col] == 0)
+            if (!cantUnsee[row][col] && state.grid[row][col].isVisible && best.territory[row][col] == 0)
                 state.v.tile(Location(row,col));
     state.v.setFillColor(0, 128, 0, 0.5);
     for (int row = 0; row < state.rows; ++row)
         for (int col = 0; col < state.cols; ++col)
-            if (e_self[row][col] == Territory::RANGE+2 && best.territory[row][col] > 0)
+            if (!cantUnsee[row][col] && !state.grid[row][col].isVisible && best.territory[row][col] > 0)
                 state.v.tile(Location(row,col));
 #endif
 #endif

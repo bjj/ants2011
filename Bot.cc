@@ -31,6 +31,12 @@ void Bot::playGame()
 {
     homeDefense = state.neighborhood_offsets(state.viewradius + 2);
 
+    set<Location> vN_m1(state.visionNeighborhood.begin(), state.visionNeighborhood.end());
+    for (int d = 0; d < TDIRECTIONS; ++d)
+        for (State::iterator it = state.visionArc[d].begin(); it != state.visionArc[d].end(); ++it)
+            vN_m1.erase(*it);
+    copy(vN_m1.begin(), vN_m1.end(), back_inserter(visionNeighborhood_m1));
+
     endTurn();
 
     //continues making moves while the game is not over

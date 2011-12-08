@@ -76,6 +76,7 @@ struct State
     std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
     LocationSet allMyHills, allEnemyHills, allFood;
     std::vector<Location> visionNeighborhood, combatNeighborhood;
+    std::vector<std::vector<Location> > visionArc;
     int visibleSquares;
     typedef std::vector<Location>::iterator iterator;
 
@@ -121,6 +122,7 @@ struct State
     void updateVisionInformation();
     std::vector<Location> neighborhood_offsets(double max_dist) const;
     std::vector<Location> dialate_neighborhood(const std::vector<Location> &orig, int n) const;
+    std::vector<Location> neighborhood_arc(double max_dist, int direction) const;
 
 };
 
@@ -227,5 +229,14 @@ std::ostream& operator<<(std::ostream &os, const Grid<T> &grid)
     os << std::dec;
     return os;
 }
+
+template <typename I, typename J>
+void paint(Grid<bool> &grid, I begin, I end, J nbegin, J nend)
+{
+    for (; begin != end; ++begin)
+        for (J n = nbegin; n != nend; ++n)
+            grid(state.deltaLocation(*begin, (*n).row, (*n).col)) = true;
+}
+
 
 #endif //STATE_H_

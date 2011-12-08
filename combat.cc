@@ -304,12 +304,9 @@ Bot::combatThreat(const vector<Location> &ants, const vector<Location> &enemies,
 {
     const vector<Location> &neighborhood = state.combatNeighborhood;
     threat.reset();
-    for (vector<Location>::const_iterator it = enemies.begin(); it != enemies.end(); ++it) {
-        for (vector<Location>::const_iterator ct = neighborhood.begin(); ct != neighborhood.end(); ++ct) {
-            const Location loc = state.deltaLocation(*it, (*ct).row, (*ct).col);
-            threat(loc) = true;
-        }
-    }
+    paint(threat, enemies.begin(), enemies.end(),
+        neighborhood.begin(), neighborhood.end());
+
     vector<Location> result;
     result.reserve(ants.size());
     for (vector<Location>::const_iterator it = ants.begin(); it != ants.end(); ++it) {

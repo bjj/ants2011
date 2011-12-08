@@ -35,6 +35,8 @@ void State::setup()
     GridBase::cols = cols;
     visionNeighborhood = neighborhood_offsets(viewradius);
     combatNeighborhood = dialate_neighborhood(neighborhood_offsets(attackradius), 2);
+    for (int d = 0; d < TDIRECTIONS + 1; ++d)
+        visionArc.push_back(neighborhood_arc(viewradius, d));
 }
 
 //resets all non-water squares to land and clears the bots ant vector
@@ -334,4 +336,19 @@ State::dialate_neighborhood(const vector<Location> &orig, int n) const
         swap(dialated, neighborhood);
     }
     return vector<Location>(neighborhood.begin(), neighborhood.end());
+}
+
+vector<Location>
+State::neighborhood_arc(double max_dist, int d) const
+{
+    vector<Location> neighborhood = neighborhood_offsets(max_dist);
+    vector<Location> arc;
+
+    for (State::iterator it = neighborhood.begin(); it != neighborhood.end(); ++it) {
+        Location test((*it).row + DIRECTIONS[d][0], 
+                      (*it).col + DIRECTIONS[d][1]);
+        if (find(neighborhood.begin(), neighborhood.end(), test) == neighborhood.end())
+            arc.push_back(*it);
+    }
+    return arc;
 }
