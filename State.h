@@ -72,6 +72,7 @@ struct State
     int64_t seed;
 
     Grid<Square> grid;
+    std::vector<int> diedByPlayer, ateByPlayer;
     std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
     LocationSet allMyHills, allEnemyHills, allFood;
     std::vector<Location> visionNeighborhood, combatNeighborhood;

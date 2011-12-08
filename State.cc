@@ -12,6 +12,8 @@ State::State()
     gameover = 0;
     turn = 0;
     noPlayers = noHills = 0;
+    diedByPlayer.resize(10, 0);
+    ateByPlayer.resize(10, 0);
     avgHillSpacing = 0;
     stringstream ss;
     ss << "debug." << getpid() << ".txt";
@@ -46,6 +48,8 @@ void State::reset()
     for(int row=0; row<rows; row++)
         for(int col=0; col<cols; col++)
             grid[row][col].reset();
+    fill(diedByPlayer.begin(), diedByPlayer.end(), 0);
+    fill(ateByPlayer.begin(), ateByPlayer.end(), 0);
 }
 
 //outputs move information to the engine
@@ -106,9 +110,23 @@ void State::updateVisionInformation()
     }
     for (LocationSet::iterator it = allFood.begin(); it != allFood.end();) {
         const Square &square = grid[(*it).row][(*it).col];
-        if (square.isVisible && !square.isFood)
+        if (square.isVisible && !square.isFood) {
+            int eater = -1;
+            for (int d = 0; d < TDIRECTIONS; ++d) {
+                int player = grid(getLocation(*it, d)).ant;
+                if (player == -1) {
+                    continue;
+                } else if (eater == -1) {
+                    eater = player;
+                } else if (eater != player) {
+                    eater = -1;
+                    break;
+                }
+            }
+            if (eater >= 0)
+                ateByPlayer[eater]++;
             allFood.erase(it++);
-        else
+        } else
             ++it;
     }
 }
@@ -243,6 +261,7 @@ istream& operator>>(istream &is, State &state)
             else if(inputType == "d") //dead ant square
             {
                 is >> row >> col >> player;
+                state.diedByPlayer[player]++;
                 state.grid[row][col].putDeadAnt(player);
             }
             else if(inputType == "h")

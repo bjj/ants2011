@@ -22,6 +22,7 @@ Bot::Bot()
     , e_enemies("enemies")
     , e_self("self")
     , e_myHills("home")
+    , myInitialAnts(0), myFoodEaten(0), myDeadAnts(0), myNewAntTurn(-1)
 {
 }
 
@@ -41,6 +42,7 @@ void Bot::playGame()
             state.noHills = state.myHills.size();
             state.avgHillSpacing = sqrt(state.rows * state.cols / state.noPlayers / state.noHills);
             state.bug << state.noHills << " hills, " << state.noPlayers << " players: spacing " << state.avgHillSpacing << endl;
+            resetHive();
         }
         state.updateVisionInformation();
         makeMoves();
@@ -127,6 +129,8 @@ void Bot::makeMoves()
         maxVisibleTurn = state.turn;
     }
     state.bug << "visible " << state.visibleSquares << " out of " << state.rows * state.cols << " or " << double(state.visibleSquares)/state.rows/state.cols << " max " << maxVisibleSquares << endl;
+
+    updateHive();
 
     e_myHills.update(state.allMyHills.begin(), state.allMyHills.end());
 
@@ -332,4 +336,37 @@ void Bot::endTurn()
     state.turn++;
 
     cout << "go" << endl;
+}
+
+int Bot::hive() const
+{
+    return myInitialAnts + myFoodEaten - state.myAnts.size() - myDeadAnts;
+}
+
+void Bot::resetHive()
+{
+    myInitialAnts = state.myAnts.size();
+    myFoodEaten = 0;
+    myDeadAnts = 0;
+}
+
+void Bot::updateHive()
+{
+    myDeadAnts += state.diedByPlayer[0];
+
+    for (State::iterator it = state.myHills.begin(); it != state.myHills.end(); ++it) {
+        if (state.grid(*it).ant == 0) {
+            myNewAntTurn = state.turn;  // approx
+            break;
+        }
+    }
+
+    if (state.turn - myNewAntTurn > 3) {// really just 1 or 2
+        if (hive() != 0)
+            state.bug << "hive thinks I'm dead?" << endl;
+        resetHive();
+    }
+
+    myFoodEaten += state.ateByPlayer[0];
+    state.bug << "hive " << hive() << " = " << myInitialAnts << " + " << myFoodEaten << " - " << myDeadAnts << " - " << state.myAnts.size() << endl;
 }

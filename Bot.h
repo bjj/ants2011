@@ -66,6 +66,7 @@ struct Bot
     Grid<int> combatLabels;
     LocationSet interesting;
     std::vector<Location> hotspots;
+    int myInitialAnts, myFoodEaten, myDeadAnts, myNewAntTurn;
 
     std::vector<Location> homeDefense;
 
@@ -87,6 +88,10 @@ struct Bot
     void combatLabel(std::vector<int> &equiv, int &nextLabel, const std::vector<Location> &ants);
     std::vector<Location> combatThreat(const std::vector<Location> &ants, const std::vector<Location> &enemies, Grid<bool>& threat);
     void combatGroup(Move::close_queue &moves, LocationSet &sessile, const std::vector<Location> &, const std::vector<Location> &);
+
+    int hive() const;
+    void resetHive();
+    void updateHive();
 };
 
 #endif //BOT_H_
