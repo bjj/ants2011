@@ -178,6 +178,8 @@ void Bot::makeMoves()
     combat(moves, sessile);
     eat(moves, sessile);
 
+    pushy();
+
     vector<Location> defense;
     int defenders = 0;
     if (state.turn < state.avgHillSpacing) {
@@ -209,6 +211,7 @@ void Bot::makeMoves()
         }
     }
 
+#if 0 // pushy?
     for (State::iterator it = state.myHills.begin(); it != state.myHills.end(); ++it) {
         if (!state.grid(*it).isVisible) {
             defense.push_back(*it);
@@ -232,6 +235,7 @@ void Bot::makeMoves()
             defense.push_back(loc);
         }
     }
+#endif
 
     copy(hotspots.begin(), hotspots.end(), back_inserter(defense));
     for (State::iterator it = defense.begin(); it != defense.end(); ++it)
@@ -258,11 +262,6 @@ void Bot::makeMoves()
                 state.makeMove(move.loc, dir);
             busy(move.loc)--;
             busy(new_loc)++;
-#if 0 // this is slow
-            state.v.info(move.loc, *move.why);
-            if (angle != 0)
-                state.v.info(new_loc, "angle" + angle);
-#endif
             moved = true;
         } else {
             retry.push(move);

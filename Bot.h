@@ -57,8 +57,8 @@ struct Bot
 {
     int maxVisibleSquares, maxVisibleTurn;
     Edt e_food;
-    UniEdt e_explore;
-    Edt e_attack, e_defend;
+    UniEdt e_explore, e_push;
+    Edt e_intercept, e_attack, e_defend;
     Gpath<Passable, UnitCost> e_enemies, e_self, e_myHills;
     Grid<char> busy;
     Grid<bool> combatOccupied;
@@ -82,8 +82,9 @@ struct Bot
     void visualize();
 
     void combat(Move::close_queue &moves, LocationSet &sessile);
-    void territory(Move::close_queue &moves, LocationSet &sessile);
     void eat(Move::close_queue &moves, LocationSet &sessile);
+    void pushy();
+    void territory(Move::close_queue &moves, LocationSet &sessile);
 
     void combatLabel(std::vector<int> &equiv, int &nextLabel, const std::vector<Location> &ants);
     std::vector<Location> combatThreat(const std::vector<Location> &ants, const std::vector<Location> &enemies, Grid<bool>& threat);
