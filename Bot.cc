@@ -16,7 +16,7 @@ Bot::Bot()
     , maxVisibleTurn(-1)
     , e_food("food")
     , e_explore("explore", e_myHills)
-    , e_revisit("revisit")
+    , e_push("push", e_myHills)
     , e_attack("attack")
     , e_defend("defend")
     , e_enemies("enemies")
@@ -143,10 +143,6 @@ void Bot::makeMoves()
     //vector<Location> frontier = this->frontier(Visited());
     vector<Location> frontier = this->frontier(SeenRecently(state.turn - 19)); // min of food_turn
     e_explore.update(frontier.begin(), frontier.end());
-#if 0
-    frontier = this->frontier(Visible());
-    e_revisit.update(frontier.begin(), frontier.end());
-#endif
 
     state.bug << state << endl;
     //state.bug << e_explore << endl;
