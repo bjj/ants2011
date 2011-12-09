@@ -452,17 +452,22 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
 
             if (e_explore(dest) < e_explore(*it))
                 ant.moves[d].bonus += 1;
-
-            if (e_attack(dest) < e_attack(*it)) {
+/* // attempt to stay between enemy and my hill
+            if (e_myHills(dest) < e_attack(dest)) {
+                ant.moves[d].bonus -= 20 * !e_myHills.toward(*it, dest);
+            } else
+*/           
+            if (e_attack.toward(*it, dest)) {
                 if (e_attack(dest) < 3)
                     ant.moves[d].bonus += 50;
                 if (e_attack(dest) < 5)
                     ant.moves[d].bonus += 30;
                 else
-                    ant.moves[d].bonus += 20;
+                    ant.moves[d].bonus += 10;
             }
 
-            if (e_food(dest) < 20 && e_food(dest) < e_food(*it))
+            // mainly for single ants
+            if (e_food(dest) < 20 && e_food.toward(*it, dest))
                 ant.moves[d].bonus += 10;
         }
         if (!anyOverlaps) {
