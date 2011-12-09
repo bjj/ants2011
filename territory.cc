@@ -248,11 +248,19 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
 
             if (e_explore.toward(*it, dest))
                 bonus += 1;
-/*
+            if (e_intercept(*it) < 10 && e_intercept.toward(*it, dest))
+                bonus += 5;
+            if (e_attack.toward(*it, dest))
+                bonus += 3;
+            //if (e_defend.toward(*it, dest))
+            //    bonus += 3;
+#if 0
             if (e_explore(dest) < e_explore(*it))
-                bonus += exploreBonusMul * (e_explore(dest) < e_explore(*it));
+                bonus += exploreBonusMul;
             else if (e_explore(*it) > 9990)  // cul-de sac :(
                 bonus += exploreBonusMul * (e_enemies(dest) < e_enemies(*it));
+            /// XXX OR WHAT -- fix to use weight, not impassible
+
             if (e_attack(dest) < e_attack(*it) && e_myHills(*it) > min(16, e_attack(*it))) {
                 bonus += attackBonusMul;
                 if (e_attack(dest) < 12)
@@ -265,7 +273,7 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
                     defendMul = 30;
                 bonus += defendMul * (e_defend(dest) < e_defend(*it));
             }
-*/
+#endif
 
             ant.moves[d].bonus = bonus;
             ant.moves[d].bonus -= 2 * state.grid(dest).byWater;
