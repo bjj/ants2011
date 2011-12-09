@@ -398,7 +398,7 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
 #endif
 #endif
 
-    int stillThresh = 4 + random() % 3;
+    int stillThresh = 2 + random() % 3;
 
     // Construct *potential* enemies list:  All places where any enemies
     // relevant to our ants could move in the next turn.
