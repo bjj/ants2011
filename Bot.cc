@@ -140,12 +140,10 @@ void Bot::makeMoves()
 
     e_myHills.update(state.allMyHills.begin(), state.allMyHills.end());
 
-    //vector<Location> frontier = this->frontier(Visited());
-    vector<Location> frontier = this->frontier(SeenRecently(state.turn - 19)); // min of food_turn
+    vector<Location> frontier = this->frontier(SeenRecently(state.turn - 100));
     e_explore.update(frontier.begin(), frontier.end());
 
     state.bug << state << endl;
-    //state.bug << e_explore << endl;
 
     e_enemies.update(state.enemyAnts.begin(), state.enemyAnts.end());
     e_self.update(state.myAnts.begin(), state.myAnts.end());
