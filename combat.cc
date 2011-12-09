@@ -411,15 +411,11 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
             const Square &square = state.grid(dest);
             if (!square.isWater && !square.isFood) {
                 enemies.push_back(Combat::Enemy(dest, id));
-                enemies.back().bonus += min(250, state.grid(*it).stationary * 2);
-                if (e_myHills(dest) < 4)
-                    enemies.back().bonus *= 20;
-                /*
-                else if (e_myHills(dest) < 12)
-                    enemies.back().bonus *= 2;
-                if (e_attack(dest) < 5)
-                    enemies.back().bonus *= 2;
-                */
+                // note that adding bonus here trades guaranteed death against possible kill
+                enemies.back().bonus += min(250, state.grid(*it).stationary * 3);
+                static const int nearBonus[] = {2000, 1200, 720, 431, 259, 155, 93, 55, 33, 20, 12, 7};
+                if (e_myHills(dest) < int(sizeof(nearBonus)/sizeof(nearBonus[0])))
+                    enemies.back().bonus += nearBonus[e_myHills(dest)];
             }
         }
     }
