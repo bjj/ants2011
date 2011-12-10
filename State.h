@@ -119,6 +119,22 @@ struct State
         return Location(_row(loc.row + dr), _col(loc.col + dc));
     }
 
+    int shortRowDiff(int r1, int r2) const PURE
+    {
+        int d = r1 - r2;
+        if (d > rows / 2)
+            d -= rows;
+        return d;
+    }
+
+    int shortColDiff(int c1, int c2) const PURE
+    {
+        int d = c1 - c2;
+        if (d > cols / 2)
+            d -= cols;
+        return d;
+    }
+
     void updateVisionInformation();
     std::vector<Location> neighborhood_offsets(double max_dist) const;
     std::vector<Location> dialate_neighborhood(const std::vector<Location> &orig, int n) const;
