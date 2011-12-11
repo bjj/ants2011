@@ -418,6 +418,8 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
                 static const int nearBonus[] = {2000, 1200, 720, 431, 259, 155, 93, 55, 33, 20, 12, 7};
                 if (e_myHills(dest) < int(sizeof(nearBonus)/sizeof(nearBonus[0])))
                     enemies.back().bonus += nearBonus[e_myHills(dest)];
+                else if (e_self(dest) <= 3)
+                    enemies.back().bonus /= 4; // not likely coming this way!
             }
         }
     }
