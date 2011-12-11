@@ -72,6 +72,11 @@ public:
         return *this;
     }
 
+    void swap(Grid &other)
+    {
+        std::swap(data, other.data);
+    }
+
 protected:
     template <typename> friend class GridBfs;
     template <typename> friend class Grid;
