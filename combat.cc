@@ -375,8 +375,6 @@ void Bot::combat(Move::close_queue &moves, LocationSet &sessile)
         state.bug << "group " << i << " " << groups[i].first.size() << " / " << groups[i].second.size() << endl;
         if (groups[i].first.empty())
             continue;
-        if (groups[i].second.size() + 2 >= groups[i].first.size()) // ~outnumbered
-            copy(groups[i].second.begin(), groups[i].second.end(), back_inserter(hotspots));
         state.v.setLineColor(colors[c][0], colors[c][1], colors[c][2],0.5);
         c = (c + 1) % 8;
         combatGroup(moves, sessile, groups[i].first, groups[i].second);
@@ -399,6 +397,10 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
 #endif
 
     int stillThresh = 2 + random() % 3;
+
+    if (enemies_l.size() + 2 >= ants_l.size()) { // ~outnumbered
+        copy(enemies_l.begin(), enemies_l.end(), back_inserter(hotspots));
+    }
 
     // Construct *potential* enemies list:  All places where any enemies
     // relevant to our ants could move in the next turn.
