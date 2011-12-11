@@ -67,6 +67,7 @@ struct Bot
     LocationSet interesting;
     std::vector<Location> hotspots;
     int myInitialAnts, myFoodEaten, myDeadAnts, myNewAntTurn;
+    Grid<bool> maybeEnemies;
 
     std::vector<Location> homeDefense, visionNeighborhood_m1;
 
@@ -93,6 +94,9 @@ struct Bot
     int hive() const;
     void resetHive();
     void updateHive();
+
+    void maybeInitial();
+    void maybe();
 };
 
 #endif //BOT_H_

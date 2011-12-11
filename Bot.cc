@@ -49,6 +49,7 @@ void Bot::playGame()
             state.avgHillSpacing = sqrt(state.rows * state.cols / state.noPlayers / state.noHills);
             state.bug << state.noHills << " hills, " << state.noPlayers << " players: spacing " << state.avgHillSpacing << endl;
             resetHive();
+            maybeInitial();
         }
         state.updateVisionInformation();
         makeMoves();
@@ -137,6 +138,7 @@ void Bot::makeMoves()
     state.bug << "visible " << state.visibleSquares << " out of " << state.rows * state.cols << " or " << double(state.visibleSquares)/state.rows/state.cols << " max " << maxVisibleSquares << endl;
 
     updateHive();
+    maybe();
 
     e_myHills.update(state.allMyHills.begin(), state.allMyHills.end());
 
