@@ -451,9 +451,10 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
 #if 0
             if (e_defend(dest) < e_defend(*it))
                 ant.moves[d].bonus += 8;
-            else if (e_enemies(dest) < e_enemies(*it))
-                ant.moves[d].bonus += 7;
 #endif
+            else if (e_enemies.toward(*it, dest))
+                ant.moves[d].bonus += 2;
+
             if (e_explore(dest) < e_explore(*it))
                 ant.moves[d].bonus += 1;
 
@@ -475,7 +476,7 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
         if (!anyOverlaps) {
             ant.noOverlaps = true;
         }
-        ant.moves[TDIRECTIONS].bonus += 5;  // try to avoid jittering around
+        ant.moves[TDIRECTIONS].bonus += 1;  // try to avoid jittering around
 
         if (state.myAnts.size() > 250)
             ant.cost -= 150;
