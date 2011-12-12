@@ -213,24 +213,7 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
     tgrid.reset();
 
     vector<Territory::Ant> ants;
-
-    int attackBonusMul = 23;
-    int exploreBonusMul = 17;
-    int minExplore = maxVisibleSquares * 85 / 100;
-    int targetExplore = minExplore + (state.turn - maxVisibleTurn) * (state.viewradius * 2) * 4;
-    targetExplore = min(targetExplore, state.rows * state.cols * 95 / 100);
-    if (state.visibleSquares < minExplore)
-        exploreBonusMul = attackBonusMul + 5;
-    if (state.visibleSquares < targetExplore)
-        exploreBonusMul = attackBonusMul - 1;
-
-#if 0
-#ifdef VISUALIZER
-    stringstream exploreInfo;
-    exploreInfo << "vis " << state.visibleSquares << " min " << minExplore << " targ " << targetExplore;
-    state.v.info(Location(0,0), exploreInfo.str());
-#endif
-#endif
+    int exploreBonus = max(2, min(8, (120 - state.turn) / 10));
 
     for (State::iterator it = state.myAnts.begin(); it != state.myAnts.end(); ++it) {
         if (sessile.count(*it))
@@ -238,45 +221,41 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
         ants.push_back(Territory::Ant(*it));
         Territory::Ant &ant = ants.back();
 
-        int bonusMul = 2 + 3 * (e_enemies(*it) < 5 || e_explore(*it) < 15);
+        // scale is such that exploring into open space would be
+        // worth about 2*viewradius or about 17.  Any motivation
+        // >17 should totally eclipse keeping map vision
+
         for (int d = 0; d < TDIRECTIONS + 1; ++d) {
             const Location dest = state.getLocation(*it, d);
             ant.moves[d].occupied = &combatOccupied(dest);
             int bonus = 0;
-            if (state.grid(dest).hillPlayer == 0)
-                bonus = -100;
 
-            if (e_explore.toward(*it, dest))
+            // Try not to accidentally prevent ant spawning
+            if (state.grid(dest).hillPlayer == 0)
+                bonus += -100;
+
+            if (e_food.toward(*it, dest))
                 bonus += 1;
-            if (e_intercept(*it) < 10 && e_intercept.toward(*it, dest))
+            if (e_explore.toward(*it, dest))
+                bonus += exploreBonus;
+            if (e_frontline.toward(*it, dest))
+                bonus += max(4, 20 - e_myHills(dest));
+#if 0
+            if (e_intercept.toward(*it, dest))
+                bonus += max(1, (15 - e_intercept(*it)) / 3);
+#endif
+            if (e_enemies(dest) < 8 && e_enemies.toward(*it, dest))
                 bonus += 5;
             if (e_attack.toward(*it, dest))
+                bonus += max(3, (25 - e_intercept(*it)) / 2);
+            if (e_defend.toward(*it, dest))
                 bonus += 3;
-            //if (e_defend.toward(*it, dest))
-            //    bonus += 3;
-#if 0
-            if (e_explore(dest) < e_explore(*it))
-                bonus += exploreBonusMul;
-            else if (e_explore(*it) > 9990)  // cul-de sac :(
-                bonus += exploreBonusMul * (e_enemies(dest) < e_enemies(*it));
-            /// XXX OR WHAT -- fix to use weight, not impassible
 
-            if (e_attack(dest) < e_attack(*it) && e_myHills(*it) > min(16, e_attack(*it))) {
-                bonus += attackBonusMul;
-                if (e_attack(dest) < 12)
-                    bonus += attackBonusMul/2;
-            }
+            //if (e_attack(dest) < e_attack(*it) && e_myHills(*it) > min(16, e_attack(*it))) { WHAT?
 
-            if (e_defend(dest) <= Territory::RANGE * 2 + 1) {
-                int defendMul = 15;
-                if (e_myHills(dest) < 20)
-                    defendMul = 30;
-                bonus += defendMul * (e_defend(dest) < e_defend(*it));
-            }
-#endif
+            bonus -= 2 * state.grid(dest).byWater;
 
-            ant.moves[d].bonus = bonus;
-            ant.moves[d].bonus -= 2 * state.grid(dest).byWater;
+            ant.moves[d].bonus = bonus * 2;
         }
 
         PassableAndCanUnsee passable(cantUnsee);
