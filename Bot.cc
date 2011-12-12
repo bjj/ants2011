@@ -72,15 +72,15 @@ vector<Location> Bot::frontier(const Predicate &pred)
     for (int r = 0; r < state.rows; ++r) {
         int below = (r + 1) % state.rows;
         int above = (r - 1 + state.rows) % state.rows;
-        bool prevSeen = pred(state.grid[r][state.cols-1]);
-        bool nextSeen = pred(state.grid[r][0]);
+        bool prevSeen = pred(Location(r, state.cols-1));
+        bool nextSeen = pred(Location(r,0));
         for (int c = 1; c < state.cols; ++c) {
             bool seen = nextSeen;
-            nextSeen = pred(state.grid[r][c]);
-            bool aboveSeen = pred(state.grid[above][c-1]);
-            bool belowSeen = pred(state.grid[below][c-1]);
+            nextSeen = pred(Location(r, c));
+            bool aboveSeen = pred(Location(above, c-1));
+            bool belowSeen = pred(Location(below, c-1));
             if (!state.grid[r][c-1].isWater && !seen && (prevSeen | nextSeen | aboveSeen | belowSeen)) {
-                frontier.push_back(Location(r,c));
+                frontier.push_back(Location(r,c-1));
             }
             prevSeen = seen;
         }
@@ -89,25 +89,26 @@ vector<Location> Bot::frontier(const Predicate &pred)
 }
 
 struct Visited {
-    bool operator () (const Square &square) const
+    bool operator () (const Location &loc) const
     {
-        return square.wasVisible;
+        return state.grid(loc).wasVisible;
     }
 };
 
 struct Visible {
-    bool operator () (const Square &square) const
+    bool operator () (const Location &loc) const
     {
-        return square.isVisible;
+        return state.grid(loc).wasVisible;
     }
 };
 
 struct SeenRecently {
     SeenRecently(int when) : seenTurn(when) { }
-    bool operator () (const Square &square) const
+    bool operator () (const Location &loc) const
     {
-        return square.lastSeenTurn > seenTurn;
+        return state.grid(loc).lastSeenTurn > seenTurn;
     }
+protected:
     int seenTurn;
 };
 
