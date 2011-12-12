@@ -448,19 +448,16 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
 
             if (state.grid[dest.row][dest.col].hillPlayer > 0)
                 ant.moves[d].bonus += state.grid[dest.row][dest.col].ant == -1 ? 100 : -250;
-
+#if 0
             if (e_defend(dest) < e_defend(*it))
                 ant.moves[d].bonus += 8;
             else if (e_enemies(dest) < e_enemies(*it))
                 ant.moves[d].bonus += 7;
-
+#endif
             if (e_explore(dest) < e_explore(*it))
                 ant.moves[d].bonus += 1;
-/* // attempt to stay between enemy and my hill
-            if (e_myHills(dest) < e_attack(dest)) {
-                ant.moves[d].bonus -= 20 * !e_myHills.toward(*it, dest);
-            } else
-*/           
+
+#if 0
             if (e_attack.toward(*it, dest)) {
                 if (e_attack(dest) < 3)
                     ant.moves[d].bonus += 50;
@@ -469,6 +466,7 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
                 else
                     ant.moves[d].bonus += 10;
             }
+#endif
 
             // mainly for single ants
             if (e_food(dest) < 20 && e_food.toward(*it, dest))
@@ -481,13 +479,10 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
 
         if (state.myAnts.size() > 250)
             ant.cost -= 150;
+        else if (ants_l.size() > enemies_l.size() + 2)
+            ant.cost -= 100;
         else if (state.myAnts.size() > 200)
             ant.cost -= 75;
-#if 0
-        // get more aggressive close to home?
-        else if (e_myHills(ant.loc) > 10 && e_myHills(ant.loc) < 50)
-            ant.cost -= 50;
-#endif
     }
 
 
