@@ -10,9 +10,9 @@ void Bot::maybeInitial()
     GridBfs<Passable> end;
 
     for (State::iterator it = state.myHills.begin(); it != state.myHills.end(); ++it) {
-        GridBfs<Passable> bfs(*it);
+        GridBfs<Passable> bfs(*it), end;
 
-        for (; bfs.distance() < 20; ++bfs) { // game spec
+        for (; bfs != end && bfs.distance() < 20; ++bfs) { // game spec
             maybeEnemies(*bfs) = false;
         }
     }
