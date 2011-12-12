@@ -17,6 +17,7 @@ Bot::Bot()
     , e_food("food")
     , e_explore("explore", e_myHills)
     , e_push("push", e_myHills)
+    , e_frontline("frontline", e_myHills)
     , e_attack("attack")
     , e_defend("defend")
     , e_enemies("enemies")
@@ -112,6 +113,16 @@ protected:
     int seenTurn;
 };
 
+struct MaybeEnemies {
+    MaybeEnemies(const Bot &b) : bot(b) { }
+    bool operator () (const Location &loc) const
+    {
+        return bot.maybeEnemies(loc) && !state.grid(loc).isVisible;
+    }
+protected:
+    const Bot &bot;
+};
+
 static inline int costInflect(int c, int breakpoint, int mul, int div)
 {
     return c <= breakpoint ? c : (c * mul / div);
@@ -142,6 +153,10 @@ void Bot::makeMoves()
     maybe();
 
     e_myHills.update(state.allMyHills.begin(), state.allMyHills.end());
+    vector<Location> front;
+    if (!e_myHills.empty())
+        front = this->frontier(MaybeEnemies(*this));
+    e_frontline.update(front.begin(), front.end());
 
     vector<Location> frontier = this->frontier(SeenRecently(state.turn - 100));
     e_explore.update(frontier.begin(), frontier.end());

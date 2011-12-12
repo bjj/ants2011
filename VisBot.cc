@@ -21,20 +21,21 @@ void Bot::visualize()
         state.v.star(unseen[i], 0.7, 0.8, 4, false);
 
 #if 0
+    const Grid<int> &EDT = e_frontline;
     state.v.setLineColor(255,255,255,0.5);
     for (int row = 0; row < state.rows; ++row)
         for (int col = 0; col < state.cols; ++col)
-            if (e_explore[row][col] == 1)
+            if (EDT[row][col] == 1)
                 state.v.tileBorder(Location(row,col), "MM");
     state.v.setLineColor(200,200,200,0.5);
     for (int row = 0; row < state.rows; ++row)
         for (int col = 0; col < state.cols; ++col)
-            if (e_explore[row][col] == 2)
+            if (EDT[row][col] == 2)
                 state.v.tileBorder(Location(row,col), "MM");
     state.v.setLineColor(150,150,150,0.5);
     for (int row = 0; row < state.rows; ++row)
         for (int col = 0; col < state.cols; ++col)
-            if (e_explore[row][col] == 3)
+            if (EDT[row][col] == 3)
                 state.v.tileBorder(Location(row,col), "MM");
 #endif
 
