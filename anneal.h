@@ -32,7 +32,7 @@ public:
                     best = s;
                     ebest = enew;
                 }
-                if (enew > e && exp((e - enew) / temp) < drand48())
+                if (enew > e && exp((e - enew) / temp) * RAND_MAX < random())
                     s.undo();
                 else
                     e = enew;
