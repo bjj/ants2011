@@ -20,7 +20,7 @@ public:
     {
         visited.reset();
         q.push(start);
-        visited(start) = 5; // "don't move"
+        visited(start) = TDIRECTIONS + 1; // "don't move"
         q.push(Location(-1, -1));
         enqueueAll();
     }
