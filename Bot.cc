@@ -366,22 +366,28 @@ void Bot::defend(Move::close_queue &moves, LocationSet &sessile)
 
     state.v.setLineColor(200,200,0);
     for (vector<pair<int, Location> >::iterator it = sorted.begin(); it != sorted.end(); ++it) {
+        Move::score_queue q;
         const Location &loc = (*it).second;
         GridBfs<Passable> bfs(loc);
         int targDistance = e_myHills(loc);
         for(++bfs; bfs != end; ++bfs) {
             const Square &square = state.grid(*bfs);
-            if (square.ant == 0 && targDistance > e_myHills(*bfs) + 2 && !sessile.count(*bfs) && e_attack(*bfs) > 20) {
-                static const string why("defend+");
-                if (bfs.distance() != 1)
-                    moves.push(Move(*bfs, bfs.direction2(), 1, 1, why));
-                sessile.insert(*bfs);
-                state.v.arrow(loc, *bfs);
+            if (bfs.distance() == 1 && square.ant == 0)
                 break;
+            if (square.ant == 0 && targDistance >= e_myHills(*bfs) && !sessile.count(*bfs) && e_attack(*bfs) > 20) {
+                static const string why("defend+");
+                int score = bfs.distance() + (targDistance - e_myHills(*bfs));
+                q.push(Move(*bfs, bfs.direction2(), score, 1, why));
             } else if (bfs.distance() > 20) {
                 // too far
                 break;
             }
+        }
+        if (!q.empty()) {
+            moves.push(q.top());
+            sessile.insert(q.top().loc);
+            Location dest = state.getLocation(q.top().loc, q.top().dir);
+            state.v.arrow(loc, dest);
         }
     }
 }
