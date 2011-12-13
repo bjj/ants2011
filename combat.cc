@@ -457,30 +457,22 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
 
             if (state.grid[dest.row][dest.col].hillPlayer > 0)
                 ant.moves[d].bonus += state.grid[dest.row][dest.col].ant == -1 ? 100 : -250;
-#if 0
-            if (e_defend(dest) < e_defend(*it))
-                ant.moves[d].bonus += 8;
-#endif
+
             else if (e_enemies.toward(*it, dest))
                 ant.moves[d].bonus += 2;
 
-            if (e_explore(dest) < e_explore(*it))
+            if (e_explore.toward(*it, dest))
                 ant.moves[d].bonus += 1;
 
-#if 0
-            if (e_attack.toward(*it, dest)) {
-                if (e_attack(dest) < 3)
-                    ant.moves[d].bonus += 50;
-                if (e_attack(dest) < 5)
-                    ant.moves[d].bonus += 30;
-                else
-                    ant.moves[d].bonus += 10;
-            }
-#endif
+            if (e_frontline.toward(*it, dest))
+                ant.moves[d].bonus += 1;
+
+            if (e_attack.toward(*it, dest))
+                ant.moves[d].bonus += 1;
 
             // mainly for single ants
             if (e_food(dest) < 20 && e_food.toward(*it, dest))
-                ant.moves[d].bonus += 10;
+                ant.moves[d].bonus += 5;
         }
         if (!anyOverlaps) {
             ant.noOverlaps = true;
