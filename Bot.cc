@@ -190,9 +190,25 @@ void Bot::makeMoves()
     combat(moves, sessile);
     eat(moves, sessile);
 
+    if (!e_myHills.empty()) {
+        vector<pair<int, Location> > targetsByProx;
+        transform(state.enemyAnts.begin(), state.enemyAnts.end(), back_inserter(targetsByProx), DistanceTag(e_myHills));
+        sort(targetsByProx.begin(), targetsByProx.end());
+        int attackers = ((state.myAnts.size() - moves.size() - 5) / 2);
+        for (vector<pair<int, Location> >::iterator it = targetsByProx.begin(); it != targetsByProx.end() && attackers > 0; ++it) {
+            const Location &loc = (*it).second;
+            if (combatLabels(loc)) continue;
+            hotspots.push_back(loc);
+            hotspots.push_back(loc);
+            attackers -= 2;
+        }
+    }
+    defend(moves, sessile);
+
     pushy();
 
     vector<Location> defense;
+#if 0
     int defenders = 0;
     if (state.turn < state.avgHillSpacing) {
         defenders = 0;
@@ -222,6 +238,7 @@ void Bot::makeMoves()
             }
         }
     }
+#endif
 
 #if 0 // pushy?
     for (State::iterator it = state.myHills.begin(); it != state.myHills.end(); ++it) {
@@ -332,6 +349,36 @@ void Bot::eat(Move::close_queue &moves, LocationSet &sessile)
                 // someone else closer
                 //break;
             } else if (bfs.distance() > 35) {
+                // too far
+                break;
+            }
+        }
+    }
+}
+
+void Bot::defend(Move::close_queue &moves, LocationSet &sessile)
+{
+    vector<pair<int, Location> > sorted;
+    transform(hotspots.begin(), hotspots.end(), back_inserter(sorted), DistanceTag(e_myHills));
+    sort(sorted.begin(), sorted.end());
+
+    GridBfs<Passable> end;
+
+    state.v.setLineColor(200,200,0);
+    for (vector<pair<int, Location> >::iterator it = sorted.begin(); it != sorted.end(); ++it) {
+        const Location &loc = (*it).second;
+        GridBfs<Passable> bfs(loc);
+        int targDistance = e_myHills(loc);
+        for(++bfs; bfs != end; ++bfs) {
+            const Square &square = state.grid(*bfs);
+            if (square.ant == 0 && targDistance > e_myHills(*bfs) + 2 && !sessile.count(*bfs) && e_attack(*bfs) > 20) {
+                static const string why("defend+");
+                if (bfs.distance() != 1)
+                    moves.push(Move(*bfs, bfs.direction2(), 1, 1, why));
+                sessile.insert(*bfs);
+                state.v.arrow(loc, *bfs);
+                break;
+            } else if (bfs.distance() > 20) {
                 // too far
                 break;
             }

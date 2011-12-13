@@ -87,6 +87,22 @@ public:
         return visited(q.front()) - 1;
     }
 
+    int direction2() const
+    {
+        int d = direction();
+        Location next = state.getLocation(q.front(), d);
+        int d2 = visited(next) - 1;
+        if (d2 != -1 && d2 != TDIRECTIONS) {
+            next = state.getLocation(q.front(), d2);
+            int d3 = visited(next) - 1;
+            if (d3 != -1 && d3 != TDIRECTIONS) {
+                if (BEHIND[d3] != d2)
+                    return d2;
+            }
+        }
+        return d;
+    }
+
 protected:
     void enqueue(int dr, int dc, int dir)
     {

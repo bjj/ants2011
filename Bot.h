@@ -84,6 +84,7 @@ struct Bot
 
     void combat(Move::close_queue &moves, LocationSet &sessile);
     void eat(Move::close_queue &moves, LocationSet &sessile);
+    void defend(Move::close_queue &moves, LocationSet &sessile);
     void pushy();
     void territory(Move::close_queue &moves, LocationSet &sessile);
 

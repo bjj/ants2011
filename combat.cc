@@ -399,7 +399,16 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
     int stillThresh = 2 + random() % 3;
 
     if (enemies_l.size() + 2 >= ants_l.size()) { // ~outnumbered
-        copy(enemies_l.begin(), enemies_l.end(), back_inserter(hotspots));
+        if (enemies_l.size() == 1) {
+            hotspots.push_back(enemies_l[0]);
+            hotspots.push_back(enemies_l[0]);
+        } else {
+            vector<pair<int, Location> > sorted;
+            transform(enemies_l.begin(), enemies_l.end(), back_inserter(sorted), DistanceTag(e_myHills));
+            sort(sorted.begin(), sorted.end());
+            for (int n = min(sorted.size(), ants_l.size() - enemies_l.size() + 2), i = 0; i < n; ++i)
+                hotspots.push_back(sorted[i].second);
+        }
     }
 
     // Construct *potential* enemies list:  All places where any enemies

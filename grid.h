@@ -84,4 +84,15 @@ protected:
     T *data;
 };
 
+struct DistanceTag
+{
+    DistanceTag(const Grid<int> &g) : grid(g) { }
+    std::pair<int, Location> operator () (const Location &loc) const
+    {
+        return std::make_pair(grid(loc), loc);
+    }
+protected:
+    const Grid<int> &grid;
+};
+
 #endif /* GRID_H_ */

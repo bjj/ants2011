@@ -239,19 +239,17 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
             if (e_explore.toward(*it, dest))
                 bonus += exploreBonus;
             if (e_frontline.toward(*it, dest))
-                bonus += max(4, 20 - e_myHills(dest));
+                bonus += max(3, 20 - e_myHills(dest));
 #if 0
             if (e_intercept.toward(*it, dest))
                 bonus += max(1, (15 - e_intercept(*it)) / 3);
-#endif
             if (e_enemies(dest) < 8 && e_enemies.toward(*it, dest))
                 bonus += 5;
+#endif
             if (e_attack.toward(*it, dest))
-                bonus += max(3, (25 - e_intercept(*it)) / 2);
+                bonus += max(4, (25 - e_attack(*it)) / 2);
             if (e_defend.toward(*it, dest))
-                bonus += 3;
-
-            //if (e_attack(dest) < e_attack(*it) && e_myHills(*it) > min(16, e_attack(*it))) { WHAT?
+                bonus += 1;
 
             bonus -= 2 * state.grid(dest).byWater;
 
