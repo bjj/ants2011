@@ -175,12 +175,6 @@ void Bot::makeMoves()
                 victims.push_back(*it);
         }
     }
-#if 0
-    for (State::iterator it = state.enemyAnts.begin(); it != state.enemyAnts.end(); ++it) {
-        if (e_myHills(*it) < state.viewradius + 2)
-            victims.push_back(*it);
-    }
-#endif
     e_attack.update(victims.begin(), victims.end());
 
     busy.reset();
