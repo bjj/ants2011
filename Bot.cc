@@ -334,7 +334,7 @@ void Bot::eat(Move::close_queue &moves, LocationSet &sessile)
             //if (square.ant == 0 && e_food(*bfs) == bfs.distance()+1 && !sessile.count(*bfs)) {
             if (ontheway.count(*bfs)) {
                 break;
-            } else if (square.ant == 0 && !sessile.count(*bfs) && !e_attack(*bfs) < 8) {
+            } else if (square.ant == 0 && !sessile.count(*bfs) && e_attack(*bfs) > 8) {
                 static const string why("food+");
                 if (bfs.distance() != 1)
                     moves.push(Move(*bfs, bfs.direction(), 1, 1, why));
