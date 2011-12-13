@@ -195,7 +195,7 @@ void Bot::makeMoves()
         transform(state.enemyAnts.begin(), state.enemyAnts.end(), back_inserter(targetsByProx), DistanceTag(e_myHills));
         sort(targetsByProx.begin(), targetsByProx.end());
         int attackers = ((state.myAnts.size() - moves.size() - 5) / 2);
-        for (vector<pair<int, Location> >::iterator it = targetsByProx.begin(); it != targetsByProx.end() && attackers > 0; ++it) {
+        for (vector<pair<int, Location> >::iterator it = targetsByProx.begin(); it != targetsByProx.end() && ((*it).first < 20 ||  attackers > 0); ++it) {
             const Location &loc = (*it).second;
             if (combatLabels(loc)) continue;
             hotspots.push_back(loc);
