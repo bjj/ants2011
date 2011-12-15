@@ -68,6 +68,7 @@ struct Bot
     std::vector<Location> hotspots;
     int myInitialAnts, myFoodEaten, myDeadAnts, myNewAntTurn;
     Grid<bool> maybeEnemies;
+    int amIdead;
 
     std::vector<Location> homeDefense, visionNeighborhood_m1;
 

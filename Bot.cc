@@ -24,6 +24,7 @@ Bot::Bot()
     , e_self("self")
     , e_myHills("home")
     , myInitialAnts(0), myFoodEaten(0), myDeadAnts(0), myNewAntTurn(-1)
+    , amIdead(0)
 {
 }
 
@@ -190,7 +191,7 @@ void Bot::makeMoves()
     combat(moves, sessile);
     eat(moves, sessile);
 
-    if (!e_myHills.empty()) {
+    if (!e_myHills.empty() && amIdead < 3) {
         vector<pair<int, Location> > targetsByProx;
         transform(state.enemyAnts.begin(), state.enemyAnts.end(), back_inserter(targetsByProx), DistanceTag(e_myHills));
         sort(targetsByProx.begin(), targetsByProx.end());
@@ -420,14 +421,17 @@ void Bot::updateHive()
 
     for (State::iterator it = state.myHills.begin(); it != state.myHills.end(); ++it) {
         if (state.grid(*it).ant == 0) {
+            amIdead = 0;
             myNewAntTurn = state.turn;  // approx
             break;
         }
     }
 
     if (state.turn - myNewAntTurn > 3) {// really just 1 or 2
-        if (hive() != 0)
+        if (hive() != 0) {
+            ++amIdead;
             state.bug << "hive thinks I'm dead?" << endl;
+        }
         resetHive();
     }
 
