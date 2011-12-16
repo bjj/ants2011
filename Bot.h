@@ -62,7 +62,7 @@ struct Bot
     Gpath<Passable, UnitCost> e_enemies, e_self, e_myHills;
     Grid<char> busy;
     Grid<bool> combatOccupied;
-    Grid<bool> enemyThreat, selfThreat;;
+    Grid<bool> enemyThreat, enemyNextThreat, selfThreat;
     Grid<int> combatLabels;
     LocationSet interesting;
     std::vector<Location> hotspots;
@@ -70,7 +70,7 @@ struct Bot
     Grid<bool> maybeEnemies;
     int amIdead;
 
-    std::vector<Location> homeDefense, visionNeighborhood_m1;
+    std::vector<Location> homeDefense, visionNeighborhood_m1, combatNeighborhood_p1;
 
     Bot();
 

@@ -336,14 +336,20 @@ void Bot::combat(Move::close_queue &moves, LocationSet &sessile)
     vector<Location> ants = combatThreat(state.myAnts, state.enemyAnts, enemyThreat);
     vector<Location> enemies = combatThreat(state.enemyAnts, state.myAnts, selfThreat);
 
+    enemyNextThreat.reset();
+    paint(enemyNextThreat, enemies.begin(), enemies.end(),
+        combatNeighborhood_p1.begin(), combatNeighborhood_p1.end());
+
     // Make sure ants next to combat ants are in the queue so they can jiggle out of the way
     LocationSet neighbors;
     for (State::iterator it = ants.begin(); it != ants.end(); ++it) {
         neighbors.insert(*it);
-        for (int d = 0; d < TDIRECTIONS; ++d) {
-            const Location dest = state.getLocation(*it, d);
-            if (state.grid(dest).ant == 0)
-                neighbors.insert(dest);
+        for (int dr = -1; dr <= 1; ++dr) {
+            for (int dc = -1; dc <= 1; ++dc) {
+                const Location dest = state.deltaLocation(*it, dr, dc);
+                if (state.grid(dest).ant == 0)
+                    neighbors.insert(dest);
+            }
         }
     }
     ants.clear();
@@ -433,6 +439,8 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
         }
     }
 
+    int advantage = max(0, int(ants_l.size() - enemies_l.size()) - 2);
+
     // For every one of our ants that might engage the enemy, compute
     // which of the above potential locations are reachable on the next
     // turn for each possible move.
@@ -458,17 +466,29 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
             if (state.grid[dest.row][dest.col].hillPlayer > 0)
                 ant.moves[d].bonus += state.grid[dest.row][dest.col].ant == -1 ? 100 : -250;
 
-            else if (e_enemies.toward(*it, dest))
-                ant.moves[d].bonus += 2;
+            if (e_attack(dest) < e_myHills(dest)) {
+                if (e_explore.toward(*it, dest))
+                    ant.moves[d].bonus += 1;
 
-            if (e_explore.toward(*it, dest))
-                ant.moves[d].bonus += 1;
+                if (e_frontline.toward(*it, dest))
+                    ant.moves[d].bonus += 1;
 
-            if (e_frontline.toward(*it, dest))
-                ant.moves[d].bonus += 1;
+                if (e_attack.toward(*it, dest))
+                    ant.moves[d].bonus += 2;
+            } else {
+                if (enemyThreat(dest) && e_myHills.toward(*it, dest))
+                    ant.moves[d].bonus += 6;
+            }
 
-            if (e_attack.toward(*it, dest))
-                ant.moves[d].bonus += 1;
+            if (advantage && e_enemies.toward(*it, dest))
+                ant.moves[d].bonus += advantage * 10;
+
+            if (enemyThreat(dest))
+                ant.moves[d].bonus += 7;
+            else if (enemyNextThreat(dest))
+                ant.moves[d].bonus += 4;
+
+            ant.moves[d].bonus -= state.grid(dest).byWater;
 
             // mainly for single ants
             if (e_food(dest) < 20 && e_food.toward(*it, dest))
@@ -477,12 +497,9 @@ void Bot::combatGroup(Move::close_queue &moves, LocationSet &sessile, const vect
         if (!anyOverlaps) {
             ant.noOverlaps = true;
         }
-        ant.moves[TDIRECTIONS].bonus += 1;  // try to avoid jittering around
 
         if (state.myAnts.size() > 250)
             ant.cost -= 150;
-        else if (ants_l.size() > enemies_l.size() + 2)
-            ant.cost -= 100;
         else if (state.myAnts.size() > 200)
             ant.cost -= 75;
     }

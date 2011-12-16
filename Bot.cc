@@ -42,6 +42,8 @@ void Bot::playGame()
             vN_m1.erase(*it);
     copy(vN_m1.begin(), vN_m1.end(), back_inserter(visionNeighborhood_m1));
 
+    combatNeighborhood_p1 = state.dialate_neighborhood(state.combatNeighborhood, 1);
+
     endTurn();
 
     //continues making moves while the game is not over
