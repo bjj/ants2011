@@ -118,28 +118,29 @@ private:
         _score -= ant.score();
         ant.dir = dir;
 
+#define scores(X) (Bot::self->maybeEnemies(X) + 1)
         for (uint i = 0; i < old.gain.size(); ++i) {
             int &count = territory(old.gain[i]);
             if (--count == 0)
-                --_score;
+                _score -= scores(old.gain[i]);
         }
 
         for (uint i = 0; i < move.lose.size(); ++i) {
             int &count = territory(move.lose[i]);
             if (--count == 0)
-                --_score;
+                _score -= scores(move.lose[i]);
         }
 
         for (uint i = 0; i < old.lose.size(); ++i) {
             int &count = territory(old.lose[i]);
             if (++count == 1)
-                ++_score;
+                _score += scores(old.lose[i]);
         }
 
         for (uint i = 0; i < move.gain.size(); ++i) {
             int &count = territory(move.gain[i]);
             if (++count == 1)
-                ++_score;
+                _score += scores(move.gain[i]);
         }
         _score += ant.score();
         return true;
@@ -210,7 +211,7 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
     tgrid.reset();
 
     vector<Territory::Ant> ants;
-    int exploreBonus = max(2, min(8, (120 - state.turn) / 10));
+    int exploreBonus = max(2, min(20, (145 - state.turn) / 6));
 
     for (State::iterator it = state.myAnts.begin(); it != state.myAnts.end(); ++it) {
         if (sessile.count(*it))
