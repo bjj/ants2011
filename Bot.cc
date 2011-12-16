@@ -10,6 +10,8 @@ State state;
 
 using namespace std;
 
+Bot *Bot::self;
+
 //constructor
 Bot::Bot()
     : maxVisibleSquares(0)
@@ -26,6 +28,7 @@ Bot::Bot()
     , myInitialAnts(0), myFoodEaten(0), myDeadAnts(0), myNewAntTurn(-1)
     , amIdead(0)
 {
+    Bot::self = this;
 }
 
 //plays a single game of Ants.

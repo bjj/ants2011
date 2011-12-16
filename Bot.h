@@ -99,6 +99,8 @@ struct Bot
 
     void maybeInitial();
     void maybe();
+
+    static Bot *self;
 };
 
 #endif //BOT_H_
