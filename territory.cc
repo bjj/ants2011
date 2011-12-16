@@ -32,9 +32,8 @@ public:
         }
     };
 
-    Territory(State &s, vector<Ant> &a, Grid<int> &t)
-        : state(s)
-        , ants(a)
+    Territory(vector<Ant> &a, Grid<int> &t)
+        : ants(a)
         , territory(t)
         , _score(0)
     {
@@ -43,8 +42,7 @@ public:
     }
 
     Territory(const Territory &other)
-        : state(other.state)
-        , ants(other.ants)
+        : ants(other.ants)
         , territory(other.territory)
         , _score(other._score)
         , undo_i(other.undo_i)
@@ -96,7 +94,7 @@ public:
 
 private:
 
-    Territory() : state(*((State *)0)) { }
+    Territory() { }
 
     void apply(int n)
     {
@@ -149,7 +147,6 @@ private:
 
     friend ostream & operator << (ostream &os, const Territory &territory);
 
-    State &state;
 public:
     vector<Ant> ants;
     Grid<int> territory;
@@ -283,7 +280,7 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
 #endif
 #endif
 
-    Territory territory(state, ants, tgrid);
+    Territory territory(ants, tgrid);
     state.bug << territory;
     Anneal<Territory, 950> anneal;
     Territory best = anneal(territory);
