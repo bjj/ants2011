@@ -261,13 +261,13 @@ void Bot::eat(Move::close_queue &moves, LocationSet &sessile)
     state.v.setLineColor(0,0,200);
 
     // even at the beginning moving out of your bunker is good
-    float explore = 0.25; // state.myAnts.size() > 4 ? 0.25 : 0.0;
+    float explore = 0.25;
     priority_queue<pair<float, Location> > food;
     for (LocationSet::iterator it = state.allFood.begin(); it != state.allFood.end(); ++it) {
-        float score = 0;
+        float score = 0;  // highest best
         score += -e_self(*it);
         score += 1 * state.grid(*it).isVisible;
-        score += 2 * (e_enemies(*it) > state.viewradius);
+        score += 2 * (min(e_enemies(*it), e_frontline(*it)) > state.viewradius);
         score += -5 * (e_enemies(*it) <= e_self(*it));
         score += explore * max(0.0, state.viewradius - e_explore(*it));
         food.push(make_pair(score, *it));
@@ -276,6 +276,7 @@ void Bot::eat(Move::close_queue &moves, LocationSet &sessile)
     while (!food.empty()) {
         const Location loc = food.top().second;
         food.pop();
+        Move::score_queue q;
         GridBfs<Passable> bfs(loc);
         for(++bfs; bfs != end; ++bfs) {
             const Square &square = state.grid(*bfs);
@@ -284,22 +285,24 @@ void Bot::eat(Move::close_queue &moves, LocationSet &sessile)
                 break;
             } else if (square.ant == 0 && !sessile.count(*bfs) && e_attack(*bfs) > 8) {
                 static const string why("food+");
-                if (bfs.distance() != 1)
-                    moves.push(Move(*bfs, bfs.direction(), 1, 1, why));
-                sessile.insert(*bfs);
-                ontheway.insert(state.getLocation(*bfs, bfs.direction()));
-                state.v.arrow(loc, *bfs);
+                int score = 0;  // lowest best
+                score += -bfs.distance();
+                score += max(0, min(9, e_frontline(*bfs) - e_frontline(loc)));
+                score += 2 * (e_explore(*bfs) < e_explore(loc));
+                q.push(Move(*bfs, bfs.direction2(), score, bfs.distance(), why));
                 break;
-            } else if (square.isFood) {
-                // other food is closer to all ants
-                //break;
-            } else if (square.ant > 0) {
-                // someone else closer
-                //break;
             } else if (bfs.distance() > 35) {
                 // too far
                 break;
             }
+        }
+        if (!q.empty()) {
+            if (q.top().close != 1)
+                moves.push(q.top());
+            sessile.insert(q.top().loc);
+            Location dest = state.getLocation(q.top().loc, q.top().dir);
+            ontheway.insert(dest);
+            state.v.arrow(loc, q.top().loc);
         }
     }
 }
