@@ -58,7 +58,7 @@ struct Bot
     int maxVisibleSquares, maxVisibleTurn;
     Edt e_food;
     UniEdt e_explore, e_push, e_frontline;
-    Edt e_intercept, e_attack, e_defend;
+    Edt e_attack, e_defend;
     Gpath<Passable, UnitCost> e_enemies, e_self, e_myHills;
     Grid<char> busy;
     Grid<bool> combatOccupied;
@@ -68,6 +68,7 @@ struct Bot
     std::vector<Location> hotspots;
     int myInitialAnts, myFoodEaten, myDeadAnts, myNewAntTurn;
     Grid<bool> maybeEnemies;
+    Grid<int> tbonus;
     int amIdead;
 
     std::vector<Location> homeDefense, visionNeighborhood_m1, combatNeighborhood_p1;

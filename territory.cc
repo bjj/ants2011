@@ -238,18 +238,13 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
                 bonus += exploreBonus;
             if (e_frontline.toward(*it, dest))
                 bonus += max(3, 20 - e_myHills(dest));
-#if 0
-            if (e_intercept.toward(*it, dest))
-                bonus += max(1, (15 - e_intercept(*it)) / 3);
-            if (e_enemies(dest) < 8 && e_enemies.toward(*it, dest))
-                bonus += 5;
-#endif
             if (e_attack.toward(*it, dest))
                 bonus += max(4, (25 - e_attack(*it)) / 2);
             if (e_defend.toward(*it, dest))
                 bonus += 1;
 
             bonus -= 2 * state.grid(dest).byWater;
+            bonus += tbonus(dest);
 
             ant.moves[d].bonus = bonus * 2;
         }
