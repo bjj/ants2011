@@ -327,9 +327,14 @@ void Bot::defend(Move::close_queue &moves, LocationSet &sessile)
                 break;
             if (square.ant == 0 && targDistance >= e_myHills(*bfs) && !sessile.count(*bfs) && e_attack(*bfs) > 20) {
                 static const string why("defend+");
-                int score = bfs.distance() + (targDistance - e_myHills(*bfs));
-                q.push(Move(*bfs, bfs.direction2(), score, 1, why));
-            } else if (bfs.distance() > 20) {
+                int d = bfs.direction2(), orig;
+                do {
+                    orig = d;
+                    int score = bfs.distance() + targDistance + e_myHills(state.getLocation(*bfs, d));
+                    q.push(Move(*bfs, d, score, 1, why));
+                    d = bfs.direction();
+                } while (d != orig);
+            } else if (bfs.distance() > 30) {
                 // too far
                 break;
             }
@@ -338,7 +343,7 @@ void Bot::defend(Move::close_queue &moves, LocationSet &sessile)
             moves.push(q.top());
             sessile.insert(q.top().loc);
             Location dest = state.getLocation(q.top().loc, q.top().dir);
-            state.v.arrow(loc, dest);
+            state.v.arrow(loc, q.top().loc);
         }
     }
 }
