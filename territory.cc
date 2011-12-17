@@ -118,7 +118,7 @@ private:
         _score -= ant.score();
         ant.dir = dir;
 
-#define scores(X) (Bot::self->maybeEnemies(X) + 1)
+#define scores(X) (Bot::self->vbonus(X))
         for (uint i = 0; i < old.gain.size(); ++i) {
             int &count = territory(old.gain[i]);
             if (--count == 0)
@@ -159,7 +159,19 @@ private:
 
 ostream & operator << (ostream &os, const Territory &territory)
 {
-    os << "territory score: " << -territory.e() << endl;
+    os << "Territory score: " << -territory.e() << endl;
+    for (uint i = 0; i < territory.ants.size(); ++i) {
+        const Territory::Ant &ant = territory.ants[i];
+        os << "T  " << ant.loc << " b(";
+        const char *sep = "";
+        for (int d = 0; d < TDIRECTIONS + 1; ++d) {
+            os << sep << ant.moves[d].bonus;
+            sep = ",";
+        }
+        os << ") s(" << ant.score() << ") " << CDIRECTIONS[ant.dir] << endl;
+
+    }
+    os << endl;
     return os;
 }
 
@@ -222,6 +234,7 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
         // scale is such that exploring into open space would be
         // worth about 2*viewradius or about 17.  Any motivation
         // >17 should totally eclipse keeping map vision
+        // (now I've scaled that by 10x and added misc to it)
 
         for (int d = 0; d < TDIRECTIONS + 1; ++d) {
             const Location dest = state.getLocation(*it, d);
@@ -242,11 +255,13 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
                 bonus += max(4, (25 - e_attack(*it)) / 2);
             if (e_defend.toward(*it, dest))
                 bonus += 1;
+            if (state.grid(dest).hillPlayer > 0 && state.grid(dest).ant == -1)
+                bonus += 50;
 
             bonus -= 2 * state.grid(dest).byWater;
             bonus += tbonus(dest);
 
-            ant.moves[d].bonus = bonus * 2;
+            ant.moves[d].bonus = bonus * 20;
         }
 
         PassableAndCanUnsee passable(cantUnsee);
@@ -259,6 +274,13 @@ void Bot::territory(Move::close_queue &moves, LocationSet &sessile)
                       back_inserter(ant.moves[d].gain), Offset(state.getLocation(*it, d)), passable);
         }
     }
+
+    for (int row = 0; row < state.rows; ++row)
+        for (int col = 0; col < state.cols; ++col)
+            vbonus[row][col] = 10 +
+                               2 * maybeEnemies[row][col] +
+                               5 * !state.grid[row][col].wasVisible;
+
 #if 0
 #ifdef VISUALIZER
     for (uint i = 0; i < ants.size(); ++i) {

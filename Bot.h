@@ -68,7 +68,7 @@ struct Bot
     std::vector<Location> hotspots;
     int myInitialAnts, myFoodEaten, myDeadAnts, myNewAntTurn;
     Grid<bool> maybeEnemies;
-    Grid<int> tbonus;
+    Grid<int> tbonus, vbonus;
     int amIdead;
 
     std::vector<Location> homeDefense, visionNeighborhood_m1, combatNeighborhood_p1;
