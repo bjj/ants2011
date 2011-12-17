@@ -233,7 +233,7 @@ void Bot::makeMoves()
         int dir = rotate[angle][move.dir];
         Location new_loc = state.getLocation(move.loc, dir);
         const Square &square = state.grid(new_loc);
-        if (move.close < 0 || !busy(new_loc) && !square.isWater && !square.hillPlayer == 0) {
+        if (move.close < 0 || (!busy(new_loc) && !square.isWater && !square.hillPlayer == 0)) {
             state.bug << "move " << move.loc << ": " << CDIRECTIONS[dir] << " [" << *move.why << "] a" << angle << endl;
             if (dir != TDIRECTIONS)
                 state.makeMove(move.loc, dir);
