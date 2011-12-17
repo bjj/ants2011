@@ -98,8 +98,9 @@ protected:
     void enqueue(std::queue<QElem> & q, int d, const Location &loc, int dr, int dc)
     {
         const Location dest = state.deltaLocation(loc, dr, dc);
-        if (passable(dest))
-            enqueue(q, d, dest);
+        int p = passable(dest);
+        if (p)
+            enqueue(q, d + (p - 1), dest);
     }
 
     template <typename V>

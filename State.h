@@ -175,10 +175,34 @@ struct Unidirectional : public P
 {
     Unidirectional(const Grid<int> &f) : flow(f) { }
 
-
     bool operator () (const Location &loc) const
     {
         return P::operator()(loc) && flow(loc) <= origin;
+    }
+
+    void setOrigin(const Location &loc)
+    {
+        origin = flow(loc);
+    }
+
+private:
+    const Grid<int> &flow;
+    int origin;
+};
+
+template <int B, typename P = Passable>
+struct ForwardBiased : public P
+{
+    ForwardBiased(const Grid<int> &f) : flow(f) { }
+
+    int operator () (const Location &loc) const
+    {
+        if (!P::operator()(loc))
+            return 0;
+        else if (flow(loc) <= origin)
+            return 1;
+        else
+            return B;
     }
 
     void setOrigin(const Location &loc)
@@ -201,7 +225,7 @@ struct UnitCost
 
 struct NarrowCost
 {
-    inline bool operator () (const Location &loc) const
+    inline int operator () (const Location &loc) const
     {
         //                   OPEN WALL GAP/CORNER NICHE STUCK
         const int costs[] = { 1,   2,     20,      50,  1000 };
@@ -212,10 +236,13 @@ struct NarrowCost
 
 struct NarrowBusyCost : NarrowCost
 {
-    inline bool operator () (const Location &loc) const
+    inline int operator () (const Location &loc) const
     {
         const Square &square = state.grid(loc);
-        return NarrowCost::operator()(loc) + 4 * square.stationary;
+        if (square.stationary)
+            return NarrowCost::operator()(loc) + 4;
+        else
+            return 1;
     }
 };
 

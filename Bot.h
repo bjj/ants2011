@@ -57,7 +57,8 @@ struct Bot
 {
     int maxVisibleSquares, maxVisibleTurn;
     Edt e_food;
-    UniEdt e_explore, e_push, e_frontline;
+    Gpath<ForwardBiased<3>, NarrowBusyCost> e_explore;
+    UniEdt e_push, e_frontline;
     Edt e_attack, e_defend;
     Gpath<Passable, UnitCost> e_enemies, e_self, e_myHills;
     Grid<char> busy;
