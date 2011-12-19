@@ -1,9 +1,3 @@
-// neighbor should favor low energy changes
-
-// cooling schedule
-
-// restarting to sbest/ebest periodically?  if too far from best?
-
 #ifndef __ANNEAL_H
 #define __ANNEAL_H
 
