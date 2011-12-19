@@ -105,7 +105,7 @@ struct Visited {
 struct Visible {
     bool operator () (const Location &loc) const
     {
-        return state.grid(loc).wasVisible;
+        return state.grid(loc).isVisible;
     }
 };
 
@@ -128,21 +128,6 @@ struct MaybeEnemies {
 protected:
     const Bot &bot;
 };
-
-static inline int costInflect(int c, int breakpoint, int mul, int div)
-{
-    return c <= breakpoint ? c : (c * mul / div);
-}
-
-static inline Move
-makeMove(const Location &loc, const Edt &edt, int add = 0, int breakpoint = 99999, int mul = 1, int div = 1)
-{
-    int close = 9999;
-    int dir = edt.gradient(loc, &close);
-    int score = close <= breakpoint ? close : (close * mul / div);
-    score += add;
-    return Move(loc, dir, score, close, edt.name);
-}
 
 //makes the bots moves for the turn
 void Bot::makeMoves()
@@ -226,7 +211,6 @@ void Bot::makeMoves()
     Move::close_queue retry;
     bool moved = false;
     int angle = 0;
-    //int avoid = moves.size() < 5 ? (state.attackradius + 2) : 0;
     static const int *rotate[] = { AHEAD, RIGHT, LEFT };
     while (!moves.empty()) {
         const Move &move = moves.top();
